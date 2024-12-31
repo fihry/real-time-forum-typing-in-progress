@@ -68,6 +68,8 @@ func (h *Handler) InitRoutes(conf *config.Conf) *http.ServeMux {
 			mux.Handle(route.Path, h.Limiter(h.corsMiddleWare(h.identify(route.Role, route.Handler))))
 		}
 	}
+
+	mux.HandleFunc("/api/chat", h.realechat)
 	return mux
 }
 

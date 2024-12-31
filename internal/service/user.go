@@ -3,11 +3,12 @@ package service
 import (
 	"context"
 	"errors"
+	"net/http"
+
 	"forum/internal/entity"
 	"forum/internal/repository"
 	smpljwt "forum/pkg/smplJwt"
 	"forum/pkg/utils"
-	"net/http"
 )
 
 type UserService struct {
@@ -34,8 +35,8 @@ func (s *UserService) Create(ctx context.Context, user entity.User) (int, error)
 		switch err.Error() {
 		case "UNIQUE constraint failed: users.email":
 			return status, errors.New("already email is using")
-		case "UNIQUE constraint failed: users.username":
-			return status, errors.New("already username is using")
+		case "UNIQUE constraint failed: users.nickname":
+			return status, errors.New("already nickname is using")
 		}
 	}
 	return status, err
@@ -70,4 +71,3 @@ func (s *UserService) SignIn(ctx context.Context, user entity.User) (string, int
 	}
 	return token, http.StatusOK, nil
 }
-

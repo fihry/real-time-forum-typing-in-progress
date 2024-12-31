@@ -2,6 +2,7 @@ package utils
 
 import (
 	"errors"
+	"log"
 	"net/mail"
 	"regexp"
 	"unicode"
@@ -48,8 +49,9 @@ func isValidEmail(user *entity.User) error {
 }
 
 func isValidUser(user *entity.User) error {
-	if ok, _ := regexp.MatchString("^[a-zA-Z0-9]{4,16}$", user.Username); !ok {
-		return errors.New("invalid username")
+	log.Println("Create user", user)
+	if ok, _ := regexp.MatchString("^[a-zA-Z0-9]{4,16}$", user.Nickname); !ok {
+		return errors.New("invalid nickname")
 	}
 	return nil
 }

@@ -3,8 +3,9 @@ package repository
 import (
 	"context"
 	"database/sql"
-	"forum/internal/entity"
 	"net/http"
+
+	"forum/internal/entity"
 )
 
 type UserRepository struct {
@@ -16,14 +17,14 @@ func newUserRepository(db *sql.DB) *UserRepository {
 }
 
 func (r *UserRepository) Create(ctx context.Context, user entity.User) (int, error) {
-	query := `INSERT INTO users(username, email, hashPass)
+	query := `INSERT INTO users(nickname, email, hashPass)
 	VALUES($1, $2, $3) RETURNING id;`
 	prep, err := r.db.PrepareContext(ctx, query)
 	if err != nil {
 		return http.StatusInternalServerError, err
 	}
 	defer prep.Close()
-	if _, err = prep.ExecContext(ctx, user.Username, user.Email, user.Password); err != nil {
+	if _, err = prep.ExecContext(ctx, user.Nickname, user.Email, user.Password); err != nil {
 		return http.StatusBadRequest, err
 	}
 	return http.StatusCreated, nil
@@ -37,7 +38,7 @@ func (r *UserRepository) GetUserIDByEmail(ctx context.Context, email string) (en
 		return user, http.StatusInternalServerError, err
 	}
 	defer prep.Close()
-	
+
 	if err = prep.QueryRowContext(ctx, email).Scan(&user.ID, &user.Password); err != nil {
 		return user, http.StatusBadRequest, err
 	}

@@ -3,8 +3,8 @@ package repository
 import (
 	"context"
 	"database/sql"
-	"forum/internal/entity"
 	"net/http"
+	"forum/internal/entity"
 )
 
 type SessionRepository struct {

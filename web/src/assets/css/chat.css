@@ -1,0 +1,87 @@
+/* <div class="chat-wrapper">
+<div class="chat-header">
+    <h2 class="chat-title">Chat</h2>
+</div>
+<div class="chat-body">
+    <div class="chat-messages" id="chat-messages"></div>
+    <form id="chat-form" class="chat-form">
+        <input 
+            type="text" 
+            id="message" 
+            class="form-control" 
+            placeholder="Enter your message" 
+            required
+        >
+        <button type="submit" class="btn btn-primary">Send</button>
+    </form>
+</div>
+
+<div id="showError" class="error-message"></div>
+</div> */
+
+
+.main-content {
+    display: flex;
+    height: 100vh;
+}
+
+.chat-wrapper {
+    width: 100%;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+    padding: 10px;
+}
+
+.chat-header {
+    width: 100%;
+    height: 50px;
+    background-color: #f8f9fa;
+    padding: 10px;
+    border-bottom: 1px solid #ccc;
+    color: #000;
+}
+
+.chat-title {
+    margin: 0;
+}
+
+.chat-body {
+    overflow-y: auto;
+    padding: 10px;
+}
+
+.chat-messages {
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+}
+
+.chat-form{
+    width: 300px;
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+}
+
+.chat-form input {
+    width: 70%;
+    padding: 5px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+.chat-form button {
+    width: 25%;
+    padding: 5px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    background-color: #007bff;
+    color: #fff;
+}
+
+.error-message {
+    color: red;
+    font-size: 14px;
+    margin-top: 10px;
+}

@@ -7,7 +7,7 @@ import NavBar from "./views/NavBarView.js";
 import SideBar from "./views/SideBarView.js";
 import Utils from "./pkg/Utils.js";
 import fetcher from "./pkg/fetcher.js";
-import HomeView from "./views/HomeView.js";
+import Chat from "./views/chatView.js";
 
 const pathToRegex = (path) =>
   new RegExp("^" + path.replace(/\//g, "\\/").replace(/:\w+/g, "(.+)") + "$");
@@ -45,6 +45,13 @@ const router = async () => {
       view: CreatePost,
       minRole: roles.user,
       style: "create-post",
+    },
+    // this path using fot websockets chat
+    {
+      path: "/chat",
+      view: Chat,
+      minRole: roles.user,
+      style: "chat",
     },
     { path: "/post/:postID", view: Post, minRole: roles.guest, style: "post" },
   ];

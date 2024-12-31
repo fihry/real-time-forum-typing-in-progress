@@ -3,11 +3,14 @@ package http
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"time"
 
 	"forum/internal/entity"
 	smpljwt "forum/pkg/smplJwt"
+
+	"github.com/gorilla/websocket"
 )
 
 func (h *Handler) signUp(w http.ResponseWriter, r *http.Request) {
@@ -139,4 +142,31 @@ func (h *Handler) signOut(w http.ResponseWriter, r *http.Request) {
 	})
 
 	w.WriteHeader(http.StatusOK)
+}
+
+func (h *Handler) realechat(w http.ResponseWriter, r *http.Request) {
+	// Prepare websocket
+	upgrader := websocket.Upgrader{
+		CheckOrigin: func(r *http.Request) bool {
+			return true
+		},
+	}
+	conn, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Printf("error occured while upgrading connection: %s", err)
+		return
+	}
+	defer conn.Close()
+	for {
+		_, message, err := conn.ReadMessage()
+		if err != nil {
+			log.Printf("error occured while reading message: %s", err)
+			break
+		}
+		log.Printf("message received: %s", message)
+		// Write message back to client
+		conn.WriteJSON(map[string]interface{}{
+			"message": "welcome to the chat",
+		})
+	}
 }
