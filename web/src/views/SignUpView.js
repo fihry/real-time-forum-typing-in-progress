@@ -2,11 +2,15 @@ import AbstractView from "./AbstractView.js";
 import redirect from "../index.js";
 import fetcher from "../pkg/fetcher.js";
 
-const signup = async (email, username, password, rePassword) => {
+const signup = async (email, nikname, password, firstName, lastName, age, gander, rePassword) => {
   let body = {
+    nikname: nikname,
     email: email,
-    username: username,
     password: password,
+    firstName: firstName,
+    lastName: lastName,
+    age: age,
+    gander: gander,
     cfmpsw: rePassword,
   };
 
@@ -44,17 +48,17 @@ export default class extends AbstractView {
                     </div>
 
                     <div class="form-group">
-                        <label for="username">Username</label>
+                        <label for="nikname">nikname</label>
                         <input 
                             type="text" 
-                            id="username" 
+                            id="nikname" 
                             class="form-control" 
-                            placeholder="Choose a username" 
+                            placeholder="Choose a nikname" 
                             required
                             minlength="3"
                             maxlength="20"
                         >
-                        <div class="validation-message" id="username-error"></div>
+                        <div class="validation-message" id="nikname-error"></div>
                     </div>
 
                     <div class="form-group">
@@ -82,6 +86,53 @@ export default class extends AbstractView {
                         <div class="validation-message" id="rePassword-error"></div>
                     </div>
 
+                    <div class="form-group">
+                        <label for="firstName">First Name</label>
+                        <input 
+                            type="text" 
+                            id="firstName" 
+                            class="form-control" 
+                            placeholder="Enter your first name" 
+                            required
+                        >
+                        <div class="validation-message" id="firstName-error"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="lastName">Last Name</label>
+                        <input 
+                            type="text" 
+                            id="lastName" 
+                            class="form-control" 
+                            placeholder="Enter your last name" 
+                            required
+                        >
+                        <div class="validation-message" id="lastName-error"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="age">Age</label>
+                        <input 
+                            type="number" 
+                            id="age" 
+                            class="form-control" 
+                            placeholder="Enter your age" 
+                            required
+                        >
+                        <div class="validation-message" id="age-error"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="gander">Gender</label>
+                        <select id="gander" class="form-control" required>
+                            <option value="">Select your gender</option>
+                            <option value="male">Male</option>
+                            <option value="female">Female</option>
+                            <option value="other">Other</option>
+                        </select>
+                        <div class="validation-message" id="gander-error"></div>
+                    </div>
+
                     <div class="form-actions">
                         <button type="submit" class="btn btn-primary">Sign Up</button>
                     </div>
@@ -105,15 +156,23 @@ export default class extends AbstractView {
 
     // Input elements
     const emailInput = document.getElementById("email");
-    const usernameInput = document.getElementById("username");
+    const niknameInput = document.getElementById("nikname");
     const passwordInput = document.getElementById("password");
     const rePasswordInput = document.getElementById("rePassword");
+    const firstNameInput = document.getElementById("firstName");
+    const lastNameInput = document.getElementById("lastName");
+    const ageInput = document.getElementById("age");
+    const ganderInput = document.getElementById("gander");
 
     // Error message elements
     const emailError = document.getElementById("email-error");
-    const usernameError = document.getElementById("username-error");
+    const niknameError = document.getElementById("nikname-error");
     const passwordError = document.getElementById("password-error");
     const rePasswordError = document.getElementById("rePassword-error");
+    const firstNameError = document.getElementById("firstName-error");
+    const lastNameError = document.getElementById("lastName-error");
+    const ageError = document.getElementById("age-error");
+    const ganderError = document.getElementById("gander-error");
 
     // Email validation
     const validateEmail = (email) => {
@@ -130,22 +189,22 @@ export default class extends AbstractView {
       return true;
     };
 
-    // Username validation
-    const validateUsername = (username) => {
-      if (!username) {
-        usernameError.textContent = "Username is required";
+    // nikname validation
+    const validatenikname = (nikname) => {
+      if (!nikname) {
+        niknameError.textContent = "nikname is required";
         return false;
       }
-      if (username.length < 3) {
-        usernameError.textContent =
-          "Username must be at least 3 characters long";
+      if (nikname.length < 3) {
+        niknameError.textContent =
+          "nikname must be at least 3 characters long";
         return false;
       }
-      if (username.length > 20) {
-        usernameError.textContent = "Username must be less than 20 characters";
+      if (nikname.length > 20) {
+        niknameError.textContent = "nikname must be less than 20 characters";
         return false;
       }
-      usernameError.textContent = "";
+      niknameError.textContent = "";
       return true;
     };
 
@@ -155,7 +214,7 @@ export default class extends AbstractView {
         passwordError.textContent = "Password is required";
         return false;
       }
-      if (password.length < 8) {
+      if (password.length < 6) {
         passwordError.textContent =
           "Password must be at least 6 characters long";
         return false;
@@ -178,10 +237,54 @@ export default class extends AbstractView {
       return true;
     };
 
+    // First name validation
+    const validateFirstName = (firstName) => {
+      if (!firstName) {
+        firstNameError.textContent = "First name is required";
+        return false;
+      }
+      firstNameError.textContent = "";
+      return true;
+    };
+
+    // Last name validation
+    const validateLastName = (lastName) => {
+      if (!lastName) {
+        lastNameError.textContent = "Last name is required";
+        return false;
+      }
+      lastNameError.textContent = "";
+      return true;
+    };
+
+    // Age validation
+    const validateAge = (age) => {
+      if (!age) {
+        ageError.textContent = "Age is required";
+        return false;
+      }
+      if (isNaN(age) || age <= 0) {
+        ageError.textContent = "Please enter a valid age";
+        return false;
+      }
+      ageError.textContent = "";
+      return true;
+    };
+
+    // Gender validation
+    const validateGander = (gander) => {
+      if (!gander) {
+        ganderError.textContent = "Gender is required";
+        return false;
+      }
+      ganderError.textContent = "";
+      return true;
+    };
+
     // Real-time validation
     emailInput.addEventListener("input", () => validateEmail(emailInput.value));
-    usernameInput.addEventListener("input", () =>
-      validateUsername(usernameInput.value)
+    niknameInput.addEventListener("input", () =>
+      validatenikname(niknameInput.value)
     );
     passwordInput.addEventListener("input", () =>
       validatePassword(passwordInput.value)
@@ -189,6 +292,14 @@ export default class extends AbstractView {
     rePasswordInput.addEventListener("input", () =>
       validateConfirmPassword(passwordInput.value, rePasswordInput.value)
     );
+    firstNameInput.addEventListener("input", () =>
+      validateFirstName(firstNameInput.value)
+    );
+    lastNameInput.addEventListener("input", () =>
+      validateLastName(lastNameInput.value)
+    );
+    ageInput.addEventListener("input", () => validateAge(ageInput.value));
+    ganderInput.addEventListener("change", () => validateGander(ganderInput.value));
 
     // Form submission
     signUpForm.addEventListener("submit", async (e) => {
@@ -196,24 +307,36 @@ export default class extends AbstractView {
 
       // Validate all fields
       const isEmailValid = validateEmail(emailInput.value);
-      const isUsernameValid = validateUsername(usernameInput.value);
+      const isniknameValid = validatenikname(niknameInput.value);
       const isPasswordValid = validatePassword(passwordInput.value);
       const isConfirmPasswordValid = validateConfirmPassword(
         passwordInput.value,
         rePasswordInput.value
       );
+      const isFirstNameValid = validateFirstName(firstNameInput.value);
+      const isLastNameValid = validateLastName(lastNameInput.value);
+      const isAgeValid = validateAge(ageInput.value);
+      const isGanderValid = validateGander(ganderInput.value);
 
       // Only proceed if all validations pass
       if (
         isEmailValid &&
-        isUsernameValid &&
+        isniknameValid &&
         isPasswordValid &&
-        isConfirmPasswordValid
+        isConfirmPasswordValid &&
+        isFirstNameValid &&
+        isLastNameValid &&
+        isAgeValid &&
+        isGanderValid
       ) {
         await signup(
           emailInput.value,
-          usernameInput.value,
+          niknameInput.value,
           passwordInput.value,
+          firstNameInput.value,
+          lastNameInput.value,
+          ageInput.value,
+          ganderInput.value,
           rePasswordInput.value
         );
       }

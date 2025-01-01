@@ -59,7 +59,6 @@ func (h *Handler) InitRoutes(conf *config.Conf) *http.ServeMux {
 			w.Write([]byte(err.Error()))
 		}
 	})
-	mux.HandleFunc("/api/is-valid", h.isValidToken)
 	routes := h.createRoutes()
 	for _, route := range routes {
 		if route.Role == entity.Roles.Authorized {
@@ -68,8 +67,6 @@ func (h *Handler) InitRoutes(conf *config.Conf) *http.ServeMux {
 			mux.Handle(route.Path, h.Limiter(h.corsMiddleWare(h.identify(route.Role, route.Handler))))
 		}
 	}
-
-	mux.HandleFunc("/api/chat", h.realechat)
 	return mux
 }
 
@@ -139,6 +136,16 @@ func (h *Handler) createRoutes() []Route {
 			Path:    "/api/categories",
 			Handler: h.getAllCategories,
 			Role:    entity.Roles.Guest,
+		},
+		{
+			Path:    "/api/is-valid",
+			Handler: h.isValidToken,
+			Role:    entity.Roles.Authorized,
+		},
+		{
+			Path:    "/api/ws/chat",
+			Handler: h.realechat, // this hub is used for websocket connection only
+			Role:    entity.Roles.User,
 		},
 	}
 }

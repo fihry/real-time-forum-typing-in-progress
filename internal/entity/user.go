@@ -3,11 +3,12 @@ package entity
 type User struct {
 	ID          uint   `json:"id"`
 	Nickname    string `json:"nickname"`
-	Age         int    `json:"age"`
-	FirstName   string `json:"firstName"`
-	LastName    string `json:"lastName"`
 	Email       string `json:"email"`
 	Password    string `json:"password"`
+	FirstName   string `json:"firstName"`
+	LastName    string `json:"lastName"`
+	Age         int    `json:"age"`
+	Gander      string `json:"gander"`
 	ConfirmPass string `json:"cfmpsw"`
 	HashPass    string
 }

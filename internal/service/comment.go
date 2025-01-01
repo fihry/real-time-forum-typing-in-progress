@@ -3,10 +3,11 @@ package service
 import (
 	"context"
 	"errors"
-	"forum/internal/entity"
-	"forum/internal/repository"
 	"net/http"
 	"strings"
+
+	"forum/internal/entity"
+	"forum/internal/repository"
 )
 
 type CommentService struct {

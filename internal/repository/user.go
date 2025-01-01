@@ -17,14 +17,14 @@ func newUserRepository(db *sql.DB) *UserRepository {
 }
 
 func (r *UserRepository) Create(ctx context.Context, user entity.User) (int, error) {
-	query := `INSERT INTO users(nickname, email, hashPass)
-	VALUES($1, $2, $3) RETURNING id;`
+	query := `INSERT INTO users(nickname, email, firstName, lastName, age, gender, hashPass)
+	VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING id;`
 	prep, err := r.db.PrepareContext(ctx, query)
 	if err != nil {
 		return http.StatusInternalServerError, err
 	}
 	defer prep.Close()
-	if _, err = prep.ExecContext(ctx, user.Nickname, user.Email, user.Password); err != nil {
+	if _, err = prep.ExecContext(ctx, user.Nickname, user.Email, user.FirstName, user.LastName, user.Age, user.Gander, user.Password); err != nil {
 		return http.StatusBadRequest, err
 	}
 	return http.StatusCreated, nil

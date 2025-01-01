@@ -49,7 +49,7 @@ const newPostElement = (post) => {
   const headerContent = document.createElement("div");
   const authorName = document.createElement("div");
   authorName.classList.add("post-author-name");
-  authorName.textContent = post.username;
+  authorName.textContent = post.nikname;
 
   headerContent.appendChild(authorName);
   postCardHeader.appendChild(headerContent);
