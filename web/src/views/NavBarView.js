@@ -19,11 +19,12 @@ export default class extends AbstractView {
             <button id="register-btn" class="btn register">Register</button>
         </div>
         <div id="nav-user-links" class="${isAuthorized ? "" : "hidden"}">
-            ${
-              location.pathname !== "/create-post"
-                ? '<button id="create-post-btn" class="btn create">Create Post</button>'
-                : ""
-            }
+        ${
+          location.pathname !== "/create-post"
+          ? '<button id="create-post-btn" class="btn create">Create Post</button>'
+          : ""
+        }
+        <button id="messages-btn" class="btn messages">messages</button>
             <button id="logout-btn" class="btn logout">Logout</button>
         </div>
         `;

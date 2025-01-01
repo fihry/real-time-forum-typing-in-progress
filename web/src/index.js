@@ -111,7 +111,8 @@ const router = async () => {
   if (
     match.route.view === Home ||
     match.route.view === Post ||
-    match.route.view === CreatePost
+    match.route.view === CreatePost ||
+    match.route.view === Chat
   ) {
     // Load Navbar
     const NavBarView = new NavBar(null, user);

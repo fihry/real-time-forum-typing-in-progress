@@ -1,87 +1,196 @@
-/* <div class="chat-wrapper">
-<div class="chat-header">
-    <h2 class="chat-title">Chat</h2>
-</div>
-<div class="chat-body">
-    <div class="chat-messages" id="chat-messages"></div>
-    <form id="chat-form" class="chat-form">
-        <input 
-            type="text" 
-            id="message" 
-            class="form-control" 
-            placeholder="Enter your message" 
-            required
-        >
-        <button type="submit" class="btn btn-primary">Send</button>
-    </form>
-</div>
-
-<div id="showError" class="error-message"></div>
-</div> */
-
-
 .main-content {
     display: flex;
+    justify-content: center;
+    align-items: center;
     height: 100vh;
+    position: relative;
 }
+
+/* Chat style */ 
 
 .chat-wrapper {
     width: 100%;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
-    padding: 10px;
+    height: 100%;
+    display: flex;
+    gap: 10px;
 }
 
-.chat-header {
-    width: 100%;
-    height: 50px;
-    background-color: #f8f9fa;
+.sideBar-chat {
+    width: 250px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: start; 
+    align-items: center;
+    gap: 10px;
+    border-right: 1px solid #dddddd54;
+}
+
+.container-chat {
+    position: relative;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
     padding: 10px;
-    border-bottom: 1px solid #ccc;
-    color: #000;
+    gap: 10px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-scrollbar) transparent;
+    scrollbar-width: 5px;
+    scroll-behavior: smooth;
+    scroll-snap-align: start;
 }
 
 .chat-title {
-    margin: 0;
+    width: 100%;
+    padding: 10px;
+    background-color: var(--color-bg-post);
+    color: var(--color-text-light);
+    font-weight: bold;
+    text-align: center;
+    border-radius: 10px;
 }
 
-.chat-body {
-    overflow-y: auto;
+.chat-users {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
+.chat-user {
+    width: 100%;
     padding: 10px;
+    background-color: var(--color-bg-post);
+    color: var(--color-text-light);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.chat-user:hover {
+    background-color: var(--color-bg-hover);
 }
 
 .chat-messages {
     width: 100%;
-    height: 100%;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px;
+    background-color: var(--color-bg);
+    border-radius: 10px;
     overflow-y: auto;
 }
 
-.chat-form{
-    width: 300px;
+.chat-user1, .chat-user2 {
+    width: 100%;
     display: flex;
-    justify-content: space-between;
-    margin-top: 10px;
+    flex-direction: column;
+    gap: 5px;
 }
 
-.chat-form input {
-    width: 70%;
-    padding: 5px;
+.message-content {
+    padding: 10px;
+    background-color: var(--color-bg-post);
+    color: var(--color-text-light);
+    border-radius: 10px;
+}
+
+.chat-form {
+    width: 100%;
+    display: flex;
+    gap: 10px;
+}
+
+.chat-input {
+    flex-grow: 1;
+    padding: 10px;
+    border: 1px solid var(--color-scrollbar);
     border-radius: 5px;
-    border: 1px solid #ccc;
+    background-color: rgba(255, 255, 255, 0);
+    color: var(--color-text-light);
 }
 
-.chat-form button {
-    width: 25%;
-    padding: 5px;
+.chat-button {
+    padding: 10px 20px;
+    border: none;
     border-radius: 5px;
-    border: 1px solid #ccc;
-    background-color: #007bff;
-    color: #fff;
+    background-color: var(--color-bg-hover);
+    color: var(--color-text-light);
+    cursor: pointer;
+    transition: background-color 0.3s;
 }
 
-.error-message {
+.chat-button:hover {
+    background-color: var(--color-scrollbar);
+}
+
+.error {
     color: red;
-    font-size: 14px;
     margin-top: 10px;
+}
+
+/* Mobile style */
+
+@media (max-width: 480px) {
+    body {
+        padding: 0;
+    }
+    .body-box {
+        width: 100%;
+        padding: 10px;
+        background-color: var(--color-bg);
+        border-radius: 0;
+    }
+    .body-box nav {
+        border-radius: 10px;
+        background-color: var(--color-inverse);
+        color: var(--color-text-dark);
+    }
+    .body-box nav .searchBar {
+        display: none;
+    }
+    .right-sideBar,
+    .left-sideBar {
+        width: 100%;
+        height: auto;
+    }
+    .container-chat {
+        width: 100%;
+    }
+}
+
+/* Tablet style */
+
+@media (min-width: 481px) and (max-width: 768px) {
+    .body-box {
+        width: 100%;
+        padding: 10px;
+        background-color: var(--color-bg);
+    }
+    .right-sideBar,
+    .left-sideBar {
+        width: 25%;
+    }
+    .container-chat {
+        width: 50%;
+    }
+}
+
+/* Desktop style */
+
+@media (min-width: 769px) {
+    .right-sideBar,
+    .left-sideBar {
+        width: 20%;
+    }
+    .container-chat {
+        width: 60%;
+    }
 }
