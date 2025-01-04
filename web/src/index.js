@@ -87,7 +87,7 @@ const router = async () => {
   const isLogged = await fetcher.isLoggedIn();
   if (
     isLogged &&
-    (match.route.path == "/sign-in" || match.route.path == "/sign-up")
+    (match.route.path == "/sign-in" || match.route.path == "/sign-up"|| match.route.path == "/log-out")
   ) {
     navigateTo("/");
     return;

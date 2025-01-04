@@ -12,11 +12,6 @@ export default class extends AbstractView {
                 <div class="sideBar-chat">
                     <div class="chat-title">My contacts</div>
                     <div class="chat-users">
-                        <div class="chat-user">User1</div>
-                        <div class="chat-user">User2</div>
-                        <div class="chat-user">User3</div>
-                        <div class="chat-user">User4</div>
-                        <div class="chat-user">User5</div>
                     </div>
                 </div>
                 <div class="container-chat">
@@ -41,47 +36,62 @@ export default class extends AbstractView {
             </div>
         `;
     }
-
     async init() {
-        const chatForm = document.getElementById("chat-form");
-        const chatMessages = document.getElementById("chat-messages");
-        // Connect to WebSocket
         const ws = new WebSocket("ws://localhost:8080/api/ws/chat");
-        // Send message to chat
-        chatForm.addEventListener("submit", async (e) => {
-            e.preventDefault(); // Prevent default form submission
-            const messageInput = document.getElementById("message");
-            const message = messageInput.value;
-            ws.send(JSON.stringify({ message }));
-            messageInput.value = "";
-        });
-        // Listen for messages
-        ws.onmessage = (event) => {
-            const data = JSON.parse(event.data);
-            if (data.error) {
-                document.getElementById("showError").innerHTML = data.error;
-                return;
-            }
-            if (data.messages && Array.isArray(data.messages)) {
-                data.messages.forEach((message) => {
-                    const messageElement = document.createElement("div");
-                    messageElement.classList.add("chat-message");
-                    messageElement.innerHTML = `
-                        <div class="message-content">
-                            <p>${message}</p>
-                        </div>
-                    `;
-                    chatMessages.appendChild(messageElement);
-                });
-            } else {
-                console.log("No messages received or data.messages is not an array.");
-            }
-        
-            console.log("Chat messages:", data.message);
+        const chatUsers = document.querySelector(".chat-users");
+        const showError = document.getElementById("showError");
+        let contacts = [];
+        let contacter = {};
+
+        ws.onopen = () => {
+            console.log("Connected to chat server");
+            showError.textContent = "Connected to chat server";
         };
-        
-        // clear chat messages
-        document.getElementById("showError").innerHTML = "";
-        // Append messages to chat
+
+        ws.onmessage = (event) => {
+            try {
+                contacts = JSON.parse(event.data);
+                console.log("Contacts:", contacts);
+                chatUsers.innerHTML = ""; // Clear previous contacts
+                contacts.forEach((contact) => {
+                    const userElement = document.createElement("div");
+                    userElement.className = "chat-user";
+                    userElement.textContent = contact.nickname;
+                    userElement.addEventListener("click", () => {
+                        contacter = contact;
+                    });
+                    chatUsers.appendChild(userElement);
+                });
+            } catch (err) {
+                console.error("Error:", err);
+                showError.textContent = err.message;
+            }
+        };
+
+        ws.onerror = (event) => {
+            console.error("Error:", event);
+            showError.textContent = "WebSocket error occurred";
+        };
+
+        ws.onclose = (event) => {
+            console.log("Connection closed:", event);
+            showError.textContent = "Connection closed";
+        };
+
+        const chatForm = document.getElementById("chat-form");
+        chatForm.addEventListener("submit", (e) => {
+            e.preventDefault();
+            const messageInput = document.getElementById("message");
+            const message = messageInput.value.trim();
+
+            if (message && contacter.user_id) {
+                ws.send(JSON.stringify({ message, receiver: contacter.user_id }));
+                messageInput.value = "";
+            } else {
+                showError.textContent = "Please select a contact and enter a message";
+            }
+        });
+
+        showError.textContent = "";
     }
 }

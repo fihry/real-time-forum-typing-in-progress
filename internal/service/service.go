@@ -37,6 +37,7 @@ type Comment interface {
 }
 
 type Messages interface {
+	GetAllContacts(ctx context.Context, userID uint) ([]entity.Contact, int, error)
 	CreateMessage(ctx context.Context, input entity.Message) (int, error)
 	GetAllMessagesByUserID(ctx context.Context, userID uint, limit, offset int) ([]entity.Message, int, error)
 	GetAllUnreadMessagesByUserID(ctx context.Context, userID uint, limit, offset int) ([]entity.Message, int, error)

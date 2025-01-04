@@ -16,6 +16,32 @@ func newMessageRepository(db *sql.DB) *ChatRepository {
 	return &ChatRepository{Db: db}
 }
 
+func (r *ChatRepository) GetAllContacts(ctx context.Context, userID uint) ([]entity.Contact, int, error) {
+	query := `SELECT id , nickname  FROM users WHERE id IN (SELECT DISTINCT sender_id FROM messages WHERE receiver_id = $1) OR id IN (SELECT DISTINCT receiver_id FROM messages WHERE sender_id = $1);`
+	prep, err := r.Db.PrepareContext(ctx, query)
+	if err != nil {
+		return nil, http.StatusInternalServerError, err
+	}
+
+	defer prep.Close()
+
+	rows, err := prep.QueryContext(ctx, userID)
+	if err != nil {
+		return nil, http.StatusInternalServerError, err
+	}
+	defer rows.Close()
+
+	var Contacts []entity.Contact
+	for rows.Next() {
+		var contact entity.Contact
+		if err = rows.Scan(&contact.UserID, &contact.Nickname); err != nil {
+			return nil, http.StatusInternalServerError, err
+		}
+		Contacts = append(Contacts, contact)
+	}
+	return Contacts, http.StatusOK, nil
+}
+
 func (r *ChatRepository) CreateMessage(ctx context.Context, input entity.Message) (int, error) {
 	query := `INSERT INTO messages(sender_id, receiver_id, message, created_at)
 	VALUES($1, $2, $3, $4) RETURNING id;`

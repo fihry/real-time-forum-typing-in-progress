@@ -15,6 +15,10 @@ func newMessageService(messageRepo repository.Message) *MessageService {
 	return &MessageService{messageRepo: messageRepo}
 }
 
+func (s *MessageService) GetAllContacts(ctx context.Context, userID uint) ([]entity.Contact, int, error) {
+	return s.messageRepo.GetAllContacts(ctx, userID)
+}
+
 func (s *MessageService) CreateMessage(ctx context.Context, input entity.Message) (int, error) {
 	return s.messageRepo.CreateMessage(ctx, input)
 }

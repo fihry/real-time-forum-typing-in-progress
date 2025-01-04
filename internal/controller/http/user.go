@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"time"
 
+	"forum/internal/controller/ws"
 	"forum/internal/entity"
 	smpljwt "forum/pkg/smplJwt"
 
@@ -157,16 +158,40 @@ func (h *Handler) realechat(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer conn.Close()
+
+	// get id from token and identify client
+	token := r.Context().Value(h.service.TokenKey).(string)
+	id, err := smpljwt.ParseToken(token, h.secret)
+	if err != nil {
+		log.Printf("error occured while parsing token: %s", err)
+		return
+	}
+	ws.NewManager().AddClient(id, conn)
+	defer ws.NewManager().RemoveClient(id)
+	var contacts []entity.Contact
+	// get contacts with id from db
+	contacts, status, err := h.service.GetAllContacts(r.Context(), uint(id))
+	if err := conn.WriteJSON(contacts); err != nil {
+		log.Printf("error occured while writing contacts: %s", err)
+		return
+	}
+	if status != http.StatusOK {
+		log.Printf("error occured while getting contacts: %s", err)
+		return
+	}
+	var message entity.Message
+	go conn.ReadJSON(&message)
+	// print contacts
+	log.Printf("contacts: %v len: %d", contacts, len(contacts))
+	// read and write messages
 	for {
 		_, message, err := conn.ReadMessage()
 		if err != nil {
 			log.Printf("error occured while reading message: %s", err)
 			break
 		}
-		log.Printf("message received: %s", message)
-		// Write message back to client
-		conn.WriteJSON(map[string]interface{}{
-			"message": "welcome to the chat",
-		})
+		go ws.NewManager().ReadFromClient(id)
+		go ws.NewManager().WriteToClient(id, message)
+		log.Printf("client %d: %s", id, message)
 	}
 }

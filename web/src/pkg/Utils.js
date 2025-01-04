@@ -34,7 +34,11 @@ const logOut = () => {
   fetch(`/api/signout`, {
     mode: "cors",
     method: "POST",
-  }).then(() => window.location.reload());
+  }).then((response) => {
+    if (response.status === 200) {
+      window.location.href = "/";
+    }
+  });
 };
 
 const parseJwt = (token) => {

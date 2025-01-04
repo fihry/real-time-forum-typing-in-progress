@@ -1,7 +1,7 @@
 -- this table is used to store the chat messages
 
 CREATE TABLE  IF NOT EXISTS  messages(
-    id SERIAL PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     receiver_id INTEGER NOT NULL,
     sender_id INTEGER NOT NULL,
     message TEXT NOT NULL,
