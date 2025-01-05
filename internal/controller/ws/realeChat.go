@@ -1,15 +1,19 @@
 package ws
 
 import (
+	"context"
+	"fmt"
 	"log"
 	"sync"
+
+	"forum/internal/entity"
 
 	"github.com/gorilla/websocket"
 )
 
 type Manager struct {
 	Client map[int]*websocket.Conn
-	Mtx    sync.RWMutex
+	Mtx sync.RWMutex
 }
 
 type Client struct {
@@ -38,23 +42,24 @@ func (m *Manager) GetClient(key int) *websocket.Conn {
 	return m.Client[key]
 }
 
-func (m *Manager) WriteToClient(key int, message []byte) error {
-	conn := m.GetClient(key)
+func (m *Manager) WriteToClient(ctx context.Context, Message entity.Message) error {
+	conn := m.GetClient(Message.ReceiverID)
 	if conn == nil {
-		return nil
+		return fmt.Errorf("client %d not found", Message.ReceiverID)
 	}
 	m.Mtx.Lock()
 	defer m.Mtx.Unlock()
-	// add messge to db
-	return conn.WriteMessage(websocket.TextMessage, message)
+	return conn.WriteJSON(Message)
 }
 
-func (m *Manager) ReadFromClient(key int) (int, []byte, error) {
-	conn := m.GetClient(key)
+func (m *Manager) ReadFromClient(id int) (int, []byte, error) {
+	conn := m.GetClient(id)
 	if conn == nil {
-		return 0, nil, nil
+		return 0, nil, fmt.Errorf("client %d not found", id)
 	}
-	m.Mtx.Lock()
-	defer m.Mtx.Unlock()
-	return conn.ReadMessage()
+	_, message, err := conn.ReadMessage()
+	if err != nil {
+		return 0, nil, err
+	}
+	return id, message, nil
 }

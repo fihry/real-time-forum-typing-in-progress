@@ -145,8 +145,7 @@ func (h *Handler) signOut(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func (h *Handler) realechat(w http.ResponseWriter, r *http.Request) {
-	// Prepare websocket
+func (h *Handler) realchat(w http.ResponseWriter, r *http.Request) {
 	upgrader := websocket.Upgrader{
 		CheckOrigin: func(r *http.Request) bool {
 			return true
@@ -154,44 +153,70 @@ func (h *Handler) realechat(w http.ResponseWriter, r *http.Request) {
 	}
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		log.Printf("error occured while upgrading connection: %s", err)
+		log.Printf("error occurred while upgrading connection: %s", err)
 		return
 	}
 	defer conn.Close()
 
-	// get id from token and identify client
-	token := r.Context().Value(h.service.TokenKey).(string)
+	token, ok := r.Context().Value(h.service.TokenKey).(string)
+	if !ok {
+		log.Printf("error occurred while retrieving token from context")
+		return
+	}
 	id, err := smpljwt.ParseToken(token, h.secret)
 	if err != nil {
-		log.Printf("error occured while parsing token: %s", err)
+		log.Printf("error occurred while parsing token: %s", err)
 		return
 	}
-	ws.NewManager().AddClient(id, conn)
-	defer ws.NewManager().RemoveClient(id)
-	var contacts []entity.Contact
-	// get contacts with id from db
-	contacts, status, err := h.service.GetAllContacts(r.Context(), uint(id))
-	if err := conn.WriteJSON(contacts); err != nil {
-		log.Printf("error occured while writing contacts: %s", err)
+
+	manager := ws.NewManager()
+	manager.AddClient(id, conn)
+	defer manager.RemoveClient(id)
+
+	var InitChatData struct {
+		Contacts []entity.Contact
+		Messages []entity.Message
+	}
+	var status int
+	InitChatData.Contacts, status, err = h.service.GetAllContacts(r.Context(), uint(id))
+	if err != nil || status != http.StatusOK {
+		log.Printf("error occurred while getting contacts: %s", err)
 		return
 	}
-	if status != http.StatusOK {
-		log.Printf("error occured while getting contacts: %s", err)
+
+	InitChatData.Messages, status, err = h.service.GetAllMessagesByUserID(r.Context(), uint(id), 10, 0)
+	if err != nil || status != http.StatusOK {
+		log.Printf("error occurred while getting messages: %s", err)
 		return
 	}
-	var message entity.Message
-	go conn.ReadJSON(&message)
-	// print contacts
-	log.Printf("contacts: %v len: %d", contacts, len(contacts))
-	// read and write messages
+	if err := conn.WriteJSON(InitChatData); err != nil {
+		log.Printf("error occurred while writing messages: %s", err)
+		return
+	}
+
+	go manager.ReadFromClient(id)
+
 	for {
 		_, message, err := conn.ReadMessage()
 		if err != nil {
-			log.Printf("error occured while reading message: %s", err)
+			log.Printf("error occurred while reading message: %s", err)
 			break
 		}
-		go ws.NewManager().ReadFromClient(id)
-		go ws.NewManager().WriteToClient(id, message)
-		log.Printf("client %d: %s", id, message)
+
+		var messageInfo entity.Message
+		messageInfo.SenderID = id
+		messageInfo.CreatedAt = time.Now().Format("2006-01-02 15:04:05")
+		if err := json.Unmarshal(message, &messageInfo); err != nil {
+			log.Printf("error occurred while unmarshaling message: %s", err)
+			break
+		}
+
+		go manager.WriteToClient(r.Context(), messageInfo)
+
+		status, err := h.service.CreateMessage(r.Context(), messageInfo)
+		if err != nil || status != http.StatusCreated {
+			log.Printf("error occurred while creating message: %v", err)
+			break
+		}
 	}
 }

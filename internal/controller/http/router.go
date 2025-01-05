@@ -144,7 +144,7 @@ func (h *Handler) createRoutes() []Route {
 		},
 		{
 			Path:    "/api/ws/chat",
-			Handler: h.realechat, // this hub is used for websocket connection only
+			Handler: h.realchat, // this hub is used for websocket connection only
 			Role:    entity.Roles.User,
 		},
 	}

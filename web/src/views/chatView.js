@@ -40,7 +40,10 @@ export default class extends AbstractView {
         const ws = new WebSocket("ws://localhost:8080/api/ws/chat");
         const chatUsers = document.querySelector(".chat-users");
         const showError = document.getElementById("showError");
-        let contacts = [];
+        let InitChatData = {
+            Contacts: [],
+            Messages: [],
+        };
         let contacter = {};
 
         ws.onopen = () => {
@@ -50,10 +53,10 @@ export default class extends AbstractView {
 
         ws.onmessage = (event) => {
             try {
-                contacts = JSON.parse(event.data);
-                console.log("Contacts:", contacts);
+                InitChatData = JSON.parse(event.data);
+                console.log("Contacts:", InitChatData["Contacts"]);
                 chatUsers.innerHTML = ""; // Clear previous contacts
-                contacts.forEach((contact) => {
+                InitChatData.Contacts.forEach((contact) => {
                     const userElement = document.createElement("div");
                     userElement.className = "chat-user";
                     userElement.textContent = contact.nickname;
@@ -85,7 +88,7 @@ export default class extends AbstractView {
             const message = messageInput.value.trim();
 
             if (message && contacter.user_id) {
-                ws.send(JSON.stringify({ message, receiver: contacter.user_id }));
+                ws.send(JSON.stringify({ message, receiver_id: contacter.user_id }));
                 messageInput.value = "";
             } else {
                 showError.textContent = "Please select a contact and enter a message";

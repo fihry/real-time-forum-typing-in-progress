@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"log"
 	"net/http"
 
 	"forum/internal/entity"
@@ -43,8 +44,9 @@ func (r *ChatRepository) GetAllContacts(ctx context.Context, userID uint) ([]ent
 }
 
 func (r *ChatRepository) CreateMessage(ctx context.Context, input entity.Message) (int, error) {
+	log.Println(input)
 	query := `INSERT INTO messages(sender_id, receiver_id, message, created_at)
-	VALUES($1, $2, $3, $4) RETURNING id;`
+    VALUES($1, $2, $3, $4) RETURNING id;`
 	prep, err := r.Db.PrepareContext(ctx, query)
 	if err != nil {
 		return http.StatusInternalServerError, err
