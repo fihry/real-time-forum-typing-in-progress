@@ -2,18 +2,18 @@ import AbstractView from "./AbstractView.js";
 import redirect from "../index.js";
 import fetcher from "../pkg/fetcher.js";
 
-const signup = async (email, nikname, password, firstName, lastName, age, gander, rePassword) => {
+const signup = async (email, nickname, password, firstName, lastName, age, gander, rePassword) => {
   let body = {
-    nikname: nikname,
+    nickname: nickname,
     email: email,
     password: password,
     firstName: firstName,
     lastName: lastName,
-    age: age,
+    age: Number(age),
     gander: gander,
     cfmpsw: rePassword,
   };
-
+  console.log(body);
   const data = await fetcher.post("/api/signup", body);
   if (data && data.msg !== undefined) {
     let showErr = document.getElementById("showError");
@@ -31,124 +31,124 @@ export default class extends AbstractView {
 
   async getHtml() {
     return `
-            <div class="auth-wrapper">
-                <form id="sign-up-form" class="auth-form">
-                    <h2 class="form-title">Create Your Account</h2>
-                    
-                    <div class="form-group">
-                        <label for="email">Email Address</label>
-                        <input 
-                            type="email" 
-                            id="email" 
-                            class="form-control" 
-                            placeholder="Enter your email" 
-                            required
-                        >
-                        <div class="validation-message" id="email-error"></div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="nikname">nikname</label>
-                        <input 
-                            type="text" 
-                            id="nikname" 
-                            class="form-control" 
-                            placeholder="Choose a nikname" 
-                            required
-                            minlength="3"
-                            maxlength="20"
-                        >
-                        <div class="validation-message" id="nikname-error"></div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="password">Password</label>
-                        <input 
-                            type="password" 
-                            id="password" 
-                            class="form-control" 
-                            placeholder="Create a password" 
-                            required
-                            minlength="6"
-                        >
-                        <div class="validation-message" id="password-error"></div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="rePassword">Confirm Password</label>
-                        <input 
-                            type="password" 
-                            id="rePassword" 
-                            class="form-control" 
-                            placeholder="Repeat your password" 
-                            required
-                        >
-                        <div class="validation-message" id="rePassword-error"></div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="firstName">First Name</label>
-                        <input 
-                            type="text" 
-                            id="firstName" 
-                            class="form-control" 
-                            placeholder="Enter your first name" 
-                            required
-                        >
-                        <div class="validation-message" id="firstName-error"></div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="lastName">Last Name</label>
-                        <input 
-                            type="text" 
-                            id="lastName" 
-                            class="form-control" 
-                            placeholder="Enter your last name" 
-                            required
-                        >
-                        <div class="validation-message" id="lastName-error"></div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="age">Age</label>
-                        <input 
-                            type="number" 
-                            id="age" 
-                            class="form-control" 
-                            placeholder="Enter your age" 
-                            required
-                        >
-                        <div class="validation-message" id="age-error"></div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="gander">Gender</label>
-                        <select id="gander" class="form-control" required>
-                            <option value="">Select your gender</option>
-                            <option value="male">Male</option>
-                            <option value="female">Female</option>
-                            <option value="other">Other</option>
-                        </select>
-                        <div class="validation-message" id="gander-error"></div>
-                    </div>
-
-                    <div class="form-actions">
-                        <button type="submit" class="btn btn-primary">Sign Up</button>
-                    </div>
-
-                    <div class="form-footer">
-                        <p>
-                            Already have an account? 
-                            <a href="/sign-in" data-link>Sign In</a>
-                        </p>
-                          <a href="/" data-link>Go Home</a>
-                    </div>
-
-                    <div id="showError" class="error-message"></div>
-                </form>
+        <div class="auth-wrapper">
+          <form id="sign-up-form" class="auth-form">
+            <h2 class="form-title">Create Your Account</h2>
+            <div class="form-group">
+              <label for="firstName">First Name</label>
+              <input
+                type="text"
+                id="firstName"
+                class="form-control"
+                placeholder="Enter your first name"
+                required
+              >
+              <div class="validation-message" id="firstName-error"></div>
             </div>
-        `;
+
+            <div class="form-group">
+              <label for="lastName">Last Name</label>
+              <input
+                type="text"
+                id="lastName"
+                class="form-control"
+                placeholder="Enter your last name"
+                required
+              >
+              <div class="validation-message" id="lastName-error"></div>
+            </div>
+            <div class="form-group">
+              <label for="email">Email Address</label>
+              <input
+                type="email"
+                id="email"
+                class="form-control"
+                placeholder="Enter your email"
+                required
+              >
+              <div class="validation-message" id="email-error"></div>
+            </div>
+
+            <div class="form-group">
+              <label for="nikname">Nickname</label>
+              <input
+                type="text"
+                id="nikname"
+                class="form-control"
+                placeholder="Choose a nickname"
+                required
+                minlength="3"
+                maxlength="20"
+              >
+              <div class="validation-message" id="nikname-error"></div>
+            </div>
+
+            <div class="form-group">
+              <label for="password">Password</label>
+              <input
+                type="password"
+                id="password"
+                class="form-control"
+                placeholder="Create a password"
+                required
+                minlength="6"
+              >
+              <div class="validation-message" id="password-error"></div>
+            </div>
+
+            <div class="form-group">
+              <label for="rePassword">Confirm Password</label>
+              <input
+                type="password"
+                id="rePassword"
+                class="form-control"
+                placeholder="Repeat your password"
+                required
+              >
+              <div class="validation-message" id="rePassword-error"></div>
+            </div>
+
+
+
+            <div class="form-group">
+              <label for="age">Age</label>
+              <input
+                type="number"
+                id="age"
+                class="form-control"
+                placeholder="Enter your age"
+                required
+              >
+              <div class="validation-message" id="age-error"></div>
+            </div>
+
+            <div class="form-group">
+              <label for="gander">Gender</label>
+              <select id="gander" class="form-control" required>
+                <option value="">Select your gender</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+              </select>
+              <div class="validation-message" id="gander-error"></div>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary">Sign Up</button>
+            </div>
+
+            <div class="form-footer">
+              <p>
+                Already have an account?
+                <a href="/sign-in" data-link>Sign In</a>
+              </p>
+                <a href="/" data-link>Go Home</a>
+            </div>
+
+            <div id="showError" class="error-message"></div>
+          </form>
+        </div>
+      `;
   }
 
   async init() {

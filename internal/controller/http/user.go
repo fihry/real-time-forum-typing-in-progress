@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"time"
 
-	"forum/internal/controller/ws"
 	"forum/internal/entity"
 	smpljwt "forum/pkg/smplJwt"
 
@@ -157,66 +156,9 @@ func (h *Handler) realchat(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer conn.Close()
-
-	token, ok := r.Context().Value(h.service.TokenKey).(string)
-	if !ok {
-		log.Printf("error occurred while retrieving token from context")
-		return
-	}
-	id, err := smpljwt.ParseToken(token, h.secret)
-	if err != nil {
-		log.Printf("error occurred while parsing token: %s", err)
-		return
-	}
-
-	manager := ws.NewManager()
-	manager.AddClient(id, conn)
-	defer manager.RemoveClient(id)
-
-	var InitChatData struct {
-		Contacts []entity.Contact
-		Messages []entity.Message
-	}
-	var status int
-	InitChatData.Contacts, status, err = h.service.GetAllContacts(r.Context(), uint(id))
-	if err != nil || status != http.StatusOK {
-		log.Printf("error occurred while getting contacts: %s", err)
-		return
-	}
-
-	InitChatData.Messages, status, err = h.service.GetAllMessagesByUserID(r.Context(), uint(id), 10, 0)
-	if err != nil || status != http.StatusOK {
-		log.Printf("error occurred while getting messages: %s", err)
-		return
-	}
-	if err := conn.WriteJSON(InitChatData); err != nil {
-		log.Printf("error occurred while writing messages: %s", err)
-		return
-	}
-
-	go manager.ReadFromClient(id)
-
-	for {
-		_, message, err := conn.ReadMessage()
-		if err != nil {
-			log.Printf("error occurred while reading message: %s", err)
-			break
-		}
-
-		var messageInfo entity.Message
-		messageInfo.SenderID = id
-		messageInfo.CreatedAt = time.Now().Format("2006-01-02 15:04:05")
-		if err := json.Unmarshal(message, &messageInfo); err != nil {
-			log.Printf("error occurred while unmarshaling message: %s", err)
-			break
-		}
-
-		go manager.WriteToClient(r.Context(), messageInfo)
-
-		status, err := h.service.CreateMessage(r.Context(), messageInfo)
-		if err != nil || status != http.StatusCreated {
-			log.Printf("error occurred while creating message: %v", err)
-			break
-		}
-	}
+  err=h.service.Websocket(conn, r.Context(), h.secret)
+  if err != nil {
+    log.Printf("error occurred while handling websocket: %s", err)
+    return
+  }
 }

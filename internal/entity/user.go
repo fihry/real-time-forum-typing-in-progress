@@ -7,8 +7,8 @@ type User struct {
 	Password    string `json:"password"`
 	FirstName   string `json:"firstName"`
 	LastName    string `json:"lastName"`
-	Age         int    `json:"age"`
-	Gander      string `json:"gander"`
+	Age 	    int    `json:"age"`
+	Gender      string `json:"gender"`
 	ConfirmPass string `json:"cfmpsw"`
 	HashPass    string
 }

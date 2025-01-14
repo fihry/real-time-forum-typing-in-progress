@@ -16,11 +16,6 @@ type Manager struct {
 	Mtx sync.RWMutex
 }
 
-type Client struct {
-	Conn *websocket.Conn
-	Key  string
-}
-
 func NewManager() *Manager {
 	return &Manager{
 		Client: make(map[int]*websocket.Conn),
@@ -42,6 +37,14 @@ func (m *Manager) GetClient(key int) *websocket.Conn {
 	return m.Client[key]
 }
 
+func (m *Manager) GetonlineClients(onlineContacts *[]int){
+	m.Mtx.RLock()
+	defer m.Mtx.RUnlock()
+	for key := range m.Client {
+		*onlineContacts = append(*onlineContacts, key)
+	}
+}
+
 func (m *Manager) WriteToClient(ctx context.Context, Message entity.Message) error {
 	conn := m.GetClient(Message.ReceiverID)
 	if conn == nil {
@@ -52,14 +55,16 @@ func (m *Manager) WriteToClient(ctx context.Context, Message entity.Message) err
 	return conn.WriteJSON(Message)
 }
 
-func (m *Manager) ReadFromClient(id int) (int, []byte, error) {
-	conn := m.GetClient(id)
+func (m *Manager) ReadFromClient(message *entity.Message,id int,status *int){
+	conn := m.GetClient(message.ReceiverID)
 	if conn == nil {
-		return 0, nil, fmt.Errorf("client %d not found", id)
+		*status = 404
+		return
 	}
-	_, message, err := conn.ReadMessage()
+	*status = 200
+	err := conn.ReadJSON(message)
 	if err != nil {
-		return 0, nil, err
+		*status = 500
+		log.Println(err)
 	}
-	return id, message, nil
 }

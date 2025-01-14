@@ -10,6 +10,7 @@ import (
 type User interface {
 	Create(ctx context.Context, user entity.User) (int, error)
 	GetUserIDByEmail(ctx context.Context, email string) (entity.User, int, error)
+	GetUserByID(ctx context.Context, id int) (entity.Contact, int, error)
 }
 
 type Session interface {
@@ -47,9 +48,8 @@ type Message interface {
 	CreateMessage(ctx context.Context, input entity.Message) (int, error)
 	GetAllMessagesByUserID(ctx context.Context, userID uint, limit, offset int) ([]entity.Message, int, error)
 	GetAllUnreadMessagesByUserID(ctx context.Context, userID uint, limit, offset int) ([]entity.Message, int, error)
-	GetMessageByID(ctx context.Context, messageID uint) (entity.Message, int, error)
+	GetMessagesBySenderIDAndReceiverID(ctx context.Context, senderID, receiverID uint, limit, offset int) ([]entity.Message, int, error)
 }
-
 type key string
 
 type Keys struct {

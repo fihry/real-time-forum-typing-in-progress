@@ -1,6 +1,17 @@
 package entity
 
 type Contact struct {
-	UserID   uint   `json:"user_id"`
-	Nickname string `json:"nickname"`
+	ID        uint   `json:"id"`
+	Nickname  string `json:"nickname"`
+	Email     string `json:"email"`
+	FirstName string `json:"firstName"`
+	LastName  string `json:"lastName"`
+	Age       int    `json:"age"`
+	Gender    string `json:"gender"`
+	Status    string `json:"status"`
+}
+
+type ConstacsOrder struct {
+	Contacts []Contact 
+	Action	 string `json:"action"`
 }

@@ -24,10 +24,24 @@ func (r *UserRepository) Create(ctx context.Context, user entity.User) (int, err
 		return http.StatusInternalServerError, err
 	}
 	defer prep.Close()
-	if _, err = prep.ExecContext(ctx, user.Nickname, user.Email, user.FirstName, user.LastName, user.Age, user.Gander, user.Password); err != nil {
+	if _, err = prep.ExecContext(ctx, user.Nickname, user.Email, user.FirstName, user.LastName, user.Age, user.Gender, user.Password); err != nil {
 		return http.StatusBadRequest, err
 	}
 	return http.StatusCreated, nil
+}
+
+func (r *UserRepository) GetUserByID(ctx context.Context, id int) (entity.Contact, int, error) {
+	query := `SELECT id, nickname, email, firstName , lastName , gender , age FROM users WHERE id = $1 LIMIT 1;`
+	prep, err := r.db.PrepareContext(ctx, query)
+	Contact := entity.Contact{}
+	if err != nil {
+		return Contact, http.StatusInternalServerError, err
+	}
+	defer prep.Close()
+	if err:= prep.QueryRowContext(ctx, id).Scan(&Contact.ID,&Contact.Nickname, &Contact.Email, &Contact.FirstName, &Contact.LastName ,&Contact.Gender,&Contact.Age); err != nil {
+		return Contact, http.StatusBadRequest, err
+	}
+	return Contact, http.StatusOK, nil
 }
 
 func (r *UserRepository) GetUserIDByEmail(ctx context.Context, email string) (entity.User, int, error) {

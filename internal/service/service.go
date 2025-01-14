@@ -5,6 +5,8 @@ import (
 
 	"forum/internal/entity"
 	"forum/internal/repository"
+
+	"github.com/gorilla/websocket"
 )
 
 type User interface {
@@ -41,7 +43,8 @@ type Messages interface {
 	CreateMessage(ctx context.Context, input entity.Message) (int, error)
 	GetAllMessagesByUserID(ctx context.Context, userID uint, limit, offset int) ([]entity.Message, int, error)
 	GetAllUnreadMessagesByUserID(ctx context.Context, userID uint, limit, offset int) ([]entity.Message, int, error)
-	GetMessageByID(ctx context.Context, messageID uint) (entity.Message, int, error)
+	GetMessagesBySenderIDAndReceiverID(ctx context.Context, senderID, receiverID uint, limit, offset int) ([]entity.Message, int, error)
+	Websocket(conn *websocket.Conn, ctx context.Context, secret string) error
 }
 
 type Service struct {
@@ -61,7 +64,7 @@ func NewService(repo *repository.Repository, secret string) *Service {
 		Post:     newPostService(repo.Post, repo.Category),
 		Comment:  newCommentService(repo.Comment),
 		Category: newCategoryService(repo.Category),
-		Messages: newMessageService(repo.Message),
+		Messages: newMessageService(repo),
 		Keys:     repo.Keys,
 	}
 }
