@@ -1,6 +1,6 @@
 .main-content {
   display: flex;
-    justify-content: center;
+  justify-content: center;
     align-items: center;
     height: 100vh;
     position: relative;
@@ -10,14 +10,14 @@
 
 .chat-wrapper {
   width: 100%;
-    height: 100%;
+  height: 100%;
     display: flex;
     gap: 10px;
 }
 
 .sideBar-chat {
   width: 250px;
-    height: 100%;
+  height: 100%;
     display: flex;
     flex-direction: column;
     justify-content: start;
@@ -28,7 +28,7 @@
 
 .container-chat {
   position: relative;
-    height: 100%;
+  height: 100%;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
@@ -45,7 +45,7 @@
 
 .chat-title {
   width: 100%;
-    padding: 10px;
+  padding: 10px;
     background-color: var(--color-bg-post);
     color: var(--color-text-light);
     font-weight: bold;
@@ -55,7 +55,7 @@
 
 .chat-users {
   width: 100%;
-    display: flex;
+  display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
@@ -75,12 +75,12 @@
 
 .chat-user:hover {
   background-color: #ddd;
-    color: #000;
+  color: #000;
 }
 
 .chat-messages {
   width: 100%;
-    flex-grow: 1;
+  flex-grow: 1;
     display: flex;
     flex-direction: column;
     gap: 10px;
@@ -94,40 +94,50 @@
   position: relative;
   width: 100%;
   display: flex;
+  flex-direction: column;
   gap: 10px;
-    border-radius: 10px;
+  border-radius: 10px;
     padding: 8px;
-    border: 1px solid #ddd
+    border-top: 1px solid #ddd;
   }
   
   .chat-user1 .message-content {
-    background-color: #E7E7E7;
+  float: left;
+  background-color: #E7E7E7;
     color: #000;
     justify-content: end;
   }
   
   .chat-user2 .message-content {
-    background-color: #6E00FF;
+    background-color: #0887ff93;
     color: var(--color-text-light);
     align-items: end;
 }
 
+.online {
+  border: 1px solid #00ff00;
+}
 .message-content {
   padding: 5px;
-    background-color: var(--color-bg-post);
+  background-color: var(--color-bg-post);
     color: var(--color-text-light);
     border-radius: 10px;
 }
 
 .chat-form {
+  position: sticky;
+    bottom: 0;
   width: 100%;
-    display: flex;
+  height: auto;
+    padding: 10px;
+    background-color: #000;
+  display: flex;
     gap: 10px;
 }
 
 .chat-input {
   flex-grow: 1;
-    padding: 10px;
+  padding: 10px;
     border: 1px solid var(--color-scrollbar);
     border-radius: 5px;
     background-color: rgba(255, 255, 255, 0);
@@ -136,7 +146,7 @@
 
 .chat-button {
   padding: 10px 20px;
-    border: none;
+  border: none;
     border-radius: 5px;
     background-color: var(--color-bg-hover);
     color: var(--color-text-light);
@@ -150,26 +160,26 @@
 
 .error {
   color: red;
-    margin-top: 10px;
+  margin-top: 10px;
 }
 
 /* Mobile style */
 
 @media (max-width: 480px) {
   body {
-      padding: 0;
+    padding: 0;
     }
 
     .body-box {
       width: 100%;
-        padding: 10px;
+      padding: 10px;
         background-color: var(--color-bg);
         border-radius: 0;
     }
 
     .body-box nav {
       border-radius: 10px;
-        background-color: var(--color-inverse);
+      background-color: var(--color-inverse);
         color: var(--color-text-dark);
     }
 
@@ -180,7 +190,7 @@
     .right-sideBar,
     .left-sideBar {
       width: 100%;
-        height: auto;
+      height: auto;
     }
 
     .container-chat {
@@ -192,7 +202,7 @@
 
 @media (min-width: 481px) and (max-width: 768px) {
   .body-box {
-      width: 100%;
+    width: 100%;
       padding: 10px;
       background-color: var(--color-bg);
     }
@@ -212,7 +222,7 @@
 @media (min-width: 769px) {
 
   .right-sideBar,
-    .left-sideBar {
+  .left-sideBar {
       width: 20%;
     }
 

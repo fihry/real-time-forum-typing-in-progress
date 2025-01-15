@@ -10,7 +10,6 @@ import (
 
 	"forum/internal/entity"
 	"forum/internal/repository"
-	smpljwt "forum/pkg/smplJwt"
 	"forum/pkg/ws"
 
 	"github.com/gorilla/websocket"
@@ -21,8 +20,17 @@ type MessageService struct {
 	*ws.Manager
 }
 
+
 func newMessageService(messageRepo *repository.Repository) *MessageService {
 	return &MessageService{Repository: messageRepo, Manager: ws.NewManager()}
+}
+
+func (s *MessageService) GetContactsthasNotMessage(ctx context.Context, userID uint, limit, offset int) ([]entity.Contact, error){
+	return s.Repository.Message.GetContactsthasNotMessage(ctx, userID, limit, offset)
+}
+
+func (s *MessageService)GetContactsOrderedByLastMessage(ctx context.Context, userID uint, limit, offset int) ([]entity.Contact, error){
+	return s.Repository.Message.GetContactsOrderedByLastMessage(ctx, userID, limit, offset)
 }
 
 func (s *MessageService) GetAllContacts(ctx context.Context, userID uint) ([]entity.Contact, int, error) {
@@ -33,54 +41,21 @@ func (s *MessageService) CreateMessage(ctx context.Context, input entity.Message
 	return s.Repository.Message.CreateMessage(ctx, input)
 }
 
-func (s *MessageService) GetAllMessagesByUserID(ctx context.Context, userID uint, limit, offset int) ([]entity.Message, int, error) {
-	return s.Repository.Message.GetAllMessagesByUserID(ctx, userID, limit, offset)
-}
-
-func (s *MessageService) GetAllUnreadMessagesByUserID(ctx context.Context, userID uint, limit, offset int) ([]entity.Message, int, error) {
-	return s.Repository.Message.GetAllUnreadMessagesByUserID(ctx, userID, limit, offset)
-}
-
 func (s *MessageService) GetMessagesBySenderIDAndReceiverID(ctx context.Context, senderID, receiverID uint, limit, offset int) ([]entity.Message, int, error) {
 	return s.Repository.Message.GetMessagesBySenderIDAndReceiverID(ctx, senderID, receiverID, limit, offset)
 }
 
 func (s MessageService) Websocket(conn *websocket.Conn, ctx context.Context, secret string) error {
 	// Retrieve token from context
-	token, ok := ctx.Value(s.TokenKey).(string)
-	if !ok {
-		return fmt.Errorf("failed to retrieve token from context, expected string but got %T", ctx.Value(s.TokenKey))
-	}
-
-	// Parse token
-	id, err := smpljwt.ParseToken(token, secret)
-	if err != nil {
-		return fmt.Errorf("error occurred while parsing token: %v", err)
-	}
-
+	id :=ctx.Value(s.IDKey).(int)
+	log.Printf("User with ID %d connected", id)
 	// Add client to manager
 	s.Manager.AddClient(id, conn)
 	defer s.Manager.RemoveClient(id)
 
 	// Get all online contacts
   var ConstacsOrder entity.ConstacsOrder
-	// var idsOnManager []int
-
-
-	// s.Manager.GetonlineClients(&idsOnManager)
-
-	// var mu sync.Mutex // Mutex to protect concurrent access to Contacts
-
-	// for _, contact := range idsOnManager {
-	// 	user, status, err := s.User.GetUserByID(ctx, contact)
-	// 	if err != nil || status != http.StatusOK {
-	// 		log.Printf("Error retrieving user by ID %d: %v", contact, err)
-	// 		continue
-	// 	}
-	// 	mu.Lock()
-	// 	ConstacsOrder.Contacts = append(ConstacsOrder.Contacts, user)
-	// 	mu.Unlock()
-	// }
+	var err error
 	// get all contacts from the database and  add status if online or offline
 	ConstacsOrder.Contacts, _, err = s.GetAllContacts(ctx, uint(id))
 	if err != nil {
@@ -128,7 +103,7 @@ func (s MessageService) Websocket(conn *websocket.Conn, ctx context.Context, sec
 		case "get_messages":
 			var messages entity.MessagesOrder
 			var status int
-			messageInfo.Limit = 10
+			messageInfo.Limit = 40
 			messageInfo.Offset = 0
 			messages.Messages, status, err = s.GetMessagesBySenderIDAndReceiverID(ctx, uint(messageInfo.SenderID), uint(messageInfo.ReceiverID), messageInfo.Limit, messageInfo.Offset)
 			if err != nil || status != http.StatusOK {
@@ -142,7 +117,7 @@ func (s MessageService) Websocket(conn *websocket.Conn, ctx context.Context, sec
 			}
 		case "":
 			status, err := s.CreateMessage(ctx, messageInfo)
-			if err != nil || status != http.StatusOK {
+			if err != nil || status != http.StatusCreated {
 				log.Printf("Error creating message: %v", err)
 				return fmt.Errorf("error occurred while creating message: %v", err)
 			}

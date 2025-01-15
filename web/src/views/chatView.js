@@ -46,6 +46,7 @@ export default class extends AbstractView {
     this.ws.onerror = (event) => this.handleError(event, showError);
     this.ws.onclose = (event) => this.handleClose(event, showError);
 
+
     // Reset error message
     showError.textContent = "";
   }
@@ -64,6 +65,7 @@ export default class extends AbstractView {
     } else if (data.action === "error") {
       showError.textContent = data.message;
     }
+    this.sendMessage(showError);
   }
 
   // Display contacts in the sidebar
@@ -73,7 +75,8 @@ export default class extends AbstractView {
       this.contacts.forEach(contact => {
         const contactElement = document.createElement("div");
         contactElement.className = "chat-user";
-        contactElement.classList.add("online" ? contact.status === "online" : "offline");
+        // add class based on status online/offline
+        contactElement.classList.add(contact.status === "online" ? "online" : "offline");
         contactElement.innerHTML = `<div class="user-nickname">${contact.nickname}</div>`;
         contactElement.addEventListener("click", () => this.selectContact(contact));
         chatUsers.appendChild(contactElement);
@@ -85,91 +88,88 @@ export default class extends AbstractView {
   selectContact(contact) {
     this.contacter = contact;
     this.loadMessages();
+    // window.location.pathname = `/chat/${contact.nickname}`;
   }
 
   // Load messages for the selected contact
   loadMessages() {
     const chatMessages = document.getElementById("chat-messages");
-    chatMessages.innerHTML = ""; // Clear previous messages
-    console.log("Loading messages for contact:", this.contacter.id);
+    chatMessages.innerHTML = "";
     if (this.contacter.id) {
       this.ws.send(JSON.stringify({
         action: "get_messages",
         receiver_id: this.contacter.id
       }));
-      console.log("Fetching messages for contact:", this.contacter.nickname);
     }
   }
 
   // Display chat messages
   displayMessages() {
     const chatMessages = document.getElementById("chat-messages");
-    this.messages.forEach(message => {
+    this.messages?.forEach(message => {
       const messageElement = document.createElement("div");
+      console.log("message", message);
       messageElement.className = `chat-message ${message.sender_id === this.contacter.id ? "chat-user1" : "chat-user2"}`;
       messageElement.innerHTML = `
+      <div class="time_message">${new Date(message.created_at).toLocaleString()}</div>
         <div class="message-content">
           <p>${this.sanitizeMessage(message.message)}</p>
         </div>
       `;
       const senderElement = document.createElement("div");
       senderElement.className = "message-sender";
-      senderElement.textContent = message.sender_id === this.contacter.id ? "You" : this.contacter.nickname;
+      senderElement.textContent = message.sender_id === this.contacter.id ? this.contacter.nickname : "You";
       messageElement.prepend(senderElement);
       chatMessages.appendChild(messageElement);
     });
+    chatMessages.scrollTop = chatMessages.scrollHeight; // Auto-scroll to bottom
+  }
+  // Display a single message (from local input)
+  displayMessage(message) {
+    const chatMessages = document.getElementById("chat-messages");
+    const messageElement = document.createElement("div");
+    messageElement.className = `chat-message ${message.sender_id === this.contacter.id ? "chat-user1" : "chat-user2"}`;
+    messageElement.innerHTML = `
+    <div class="time_message">${new Date().toLocaleTimeString()}</div>
+      <div class="message-content">
+        <p>${this.sanitizeMessage(message.message)}</p>
+      </div>
+    `;
+    const senderElement = document.createElement("div");
+    const timeElement = document.createElement("div");
+    senderElement.className = "message-sender";
+    timeElement.className = "message-time";
+    senderElement.textContent = message.sender_id === this.contacter.id ? this.contacter.nickname : "You";
+    messageElement.prepend(senderElement);
+    chatMessages.appendChild(messageElement);
     chatMessages.scrollTop = chatMessages.scrollHeight; // Auto-scroll to bottom
   }
 
   // Send a message to the selected contact
   sendMessage(showError) {
     const chatForm = document.getElementById("chat-form");
-    const messageInput = document.getElementById("message");
-
-    chatForm.onsubmit = () => {
-      // event.preventDefault();
-      if (messageInput.value.trim() === "") {
-        showError.textContent = "Message cannot be empty.";
-        return;
-      }
-
-      if (this.ws.readyState === WebSocket.OPEN) {
+    chatForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const messageInput = document.getElementById("message");
+      const message = messageInput.value
+      console.log("Sending message:", message);
+      if (message && message.length > 0) {
         this.ws.send(JSON.stringify({
           receiver_id: this.contacter.id,
-          message: messageInput.value
+          message: message
         }));
-        console.log("Sent message:", messageInput.value);
-
-        // Display the message in the chat window
         this.displayMessage({
-          message: messageInput.value
+          receiver_id: this.contacter.id,
+          message: message
         });
-
-        messageInput.value = ""; // Clear input field
-        showError.textContent = ""; // Clear error message
+        messageInput.value = "";
       } else {
-        showError.textContent = "WebSocket is not open.";
+        showError.textContent = "Message cannot be empty.";
       }
-    };
+    });
   }
 
-  // Display a single message (from local input)
-  displayMessage(message) {
-    const chatMessages = document.getElementById("chat-messages");
-    const messageElement = document.createElement("div");
-    messageElement.className = `chat-message ${message.sender_id === 1 ? "chat-user1" : "chat-user2"}`;
-    messageElement.innerHTML = `
-      <div class="message-content">
-        <p>${this.sanitizeMessage(message.message)}</p>
-      </div>
-    `;
-    const senderElement = document.createElement("div");
-    senderElement.className = "message-sender";
-    senderElement.textContent = message.sender_id === 1 ? "You" : this.contacter.nickname;
-    messageElement.prepend(senderElement);
-    chatMessages.appendChild(messageElement);
-    chatMessages.scrollTop = chatMessages.scrollHeight; // Auto-scroll to bottom
-  }
+
 
   // Error handling for WebSocket connection
   handleError(event, showError) {
