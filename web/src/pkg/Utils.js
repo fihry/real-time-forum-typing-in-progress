@@ -30,7 +30,6 @@ const getUser = () => {
 const logOut = () => {
   localStorage.removeItem("id");
   localStorage.removeItem("role");
-  // http://${API_HOST_NAME}
   fetch(`/api/signout`, {
     mode: "cors",
     method: "POST",

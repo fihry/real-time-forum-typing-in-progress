@@ -115,7 +115,32 @@
 }
 
 .online {
-  border: 1px solid #00ff00;
+  position: relative;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  
+  .active {
+    background-color: #ddd;
+    color: #000;
+  }
+  
+  .badge {
+    background-color: #1ec92c;
+    color: #fff;
+    padding: 5px;
+    border-radius: 50%;
+  }
+  
+  .online .user-nickname::after {
+    content: 'online';
+    border-radius: 50%;
+    z-index: 100;
+    color: #1ec92c;
+    position: absolute;
+    margin-left: 10px;
+    font-size: 12px;
 }
 .message-content {
   padding: 5px;

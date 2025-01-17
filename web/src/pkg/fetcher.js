@@ -53,7 +53,6 @@ const fetcher = {
 };
 
 const makeRequest = async (path, body, method) => {
-  //http://${API_HOST_NAME}
   const url = `${path}`;
   const options = {
     mode: "cors",

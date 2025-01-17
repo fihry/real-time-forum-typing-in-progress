@@ -42,11 +42,12 @@ export default class extends AbstractView {
       showError.textContent = "Connected to chat server";
     };
 
-    this.ws.onmessage = (event) => this.handleMessage(event, chatUsers, showError);
+    this.ws.onmessage = (event) => {
+      this.handleMessage(event, chatUsers, showError);
+    };
     this.ws.onerror = (event) => this.handleError(event, showError);
     this.ws.onclose = (event) => this.handleClose(event, showError);
-
-
+    this.sendPing();
     // Reset error message
     showError.textContent = "";
   }
@@ -60,8 +61,13 @@ export default class extends AbstractView {
     } else if (data.action === "get_messages") {
       this.messages = data.Messages;
       this.displayMessages();
-    } else if (data.action === "") {
-      this.displayMessage(data.message);
+      this.addActiveClass();
+      this.moveContactToTop(this.contacter);
+    } else if (data.action === "new_message") {
+      this.displayMessage(data);
+      this.moveContactToTop(this.contacter);
+    } else if (data.action === "pong") {
+      console.log("Received pong from server");
     } else if (data.action === "error") {
       showError.textContent = data.message;
     }
@@ -82,6 +88,7 @@ export default class extends AbstractView {
         chatUsers.appendChild(contactElement);
       });
     }
+    this.addActiveClass();
   }
 
   // Select a contact and load their messages
@@ -105,6 +112,7 @@ export default class extends AbstractView {
 
   // Display chat messages
   displayMessages() {
+    console.log("this the new --------------------", this.messages);
     const chatMessages = document.getElementById("chat-messages");
     this.messages?.forEach(message => {
       const messageElement = document.createElement("div");
@@ -147,25 +155,62 @@ export default class extends AbstractView {
 
   // Send a message to the selected contact
   sendMessage(showError) {
+    // if (this.contacter.status === "online") {
     const chatForm = document.getElementById("chat-form");
     chatForm.addEventListener("submit", (event) => {
       event.preventDefault();
       const messageInput = document.getElementById("message");
-      const message = messageInput.value
-      console.log("Sending message:", message);
-      if (message && message.length > 0) {
-        this.ws.send(JSON.stringify({
-          receiver_id: this.contacter.id,
-          message: message
-        }));
-        this.displayMessage({
-          receiver_id: this.contacter.id,
-          message: message
+        const message = messageInput.value;
+        if (message && message.length > 0) {
+          this.ws.send(JSON.stringify({
+            action: "new_message",
+            receiver_id: this.contacter.id,
+            message: message
+          }));
+          this.displayMessage({
+            receiver_id: this.contacter.id,
+            message: message
+          });
+          messageInput.value = "";
+        } else {
+          showError.textContent = "Message cannot be empty.";
+        }
+      });
+    // } else {
+    //   showError.textContent = "Contact is offline.";
+    // }
+  }
+
+  // send message to the server to get the new status of the contacts at every 5 seconds
+  sendPing() {
+    setInterval(() => {
+      this.ws.send(JSON.stringify({
+        action: "ping"
+      }));
+    }, 5000);
+  }
+
+
+  // move the contact to the top of the list
+  moveContactToTop(contact) {
+    const index = this.contacts.findIndex(c => c.id === contact.id);
+    if (index > -1) {
+      this.contacts.splice(index, 1);
+      this.contacts.unshift(contact);
+    }
+  }
+
+
+  // add active class to the selected contact
+  addActiveClass() {
+    const chatUsers = document.querySelectorAll(".chat-user");
+    chatUsers.forEach(user => {
+      user.addEventListener("click", () => {
+        chatUsers.forEach(user => {
+          user.classList.remove("active");
         });
-        messageInput.value = "";
-      } else {
-        showError.textContent = "Message cannot be empty.";
-      }
+        user.classList.add("active");
+      });
     });
   }
 
@@ -188,3 +233,4 @@ export default class extends AbstractView {
     return message.replace(/</g, "&lt;").replace(/>/g, "&gt;");
   }
 }
+

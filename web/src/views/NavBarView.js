@@ -58,5 +58,37 @@ export default class extends AbstractView {
         window.location.href = "/sign-up";
       });
     }
+    // }
+    // Initialize the ws connection
+    const ws = new WebSocket("ws://localhost:8089/api/ws/chat");
+    ws.onopen = () => {
+      console.log("Connected to chat server");
+      setInterval(() => {
+        ws.send(JSON.stringify({ action: "ping" }));
+      }, 5000); // Send ping every 5 seconds
+    };
+    let n = 1;
+    ws.onmessage = (event) => {
+      // add netification to the messages button
+      console.log("WebSocket message received:", event.data
+      );
+      const data = JSON.parse(event.data);
+      if (data.action === "new_message") {
+        const messagesBtn = document.querySelector("#messages-btn");
+        messagesBtn.classList.add("notification");
+        // geve this badge a number
+
+        messagesBtn.innerHTML = `messages <span class='badge'>${n++}</span>`;
+        messagesBtn.addEventListener("click", () => {
+          messagesBtn.classList.remove("notification");
+        });
+      }
+    };
+    ws.onerror = (event) => {
+      console.error("WebSocket error:", event);
+    };
+
+
   }
 }
+

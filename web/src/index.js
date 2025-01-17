@@ -1,3 +1,5 @@
+// /home/melfihry/forum/web/src/index.js
+
 import Home from "./views/HomeView.js";
 import SignIn from "./views/SignInView.js";
 import SignUp from "./views/SignUpView.js";
@@ -40,19 +42,8 @@ const router = async () => {
     { path: "/", view: Home, minRole: roles.guest, style: "main-content" },
     { path: "/sign-in", view: SignIn, minRole: roles.guest, style: "auth" },
     { path: "/sign-up", view: SignUp, minRole: roles.guest, style: "auth" },
-    {
-      path: "/create-post",
-      view: CreatePost,
-      minRole: roles.user,
-      style: "create-post",
-    },
-    // this path using fot websockets chat
-    {
-      path: "/chat",
-      view: Chat,
-      minRole: roles.user,
-      style: "chat",
-    },
+    { path: "/create-post", view: CreatePost, minRole: roles.user, style: "create-post", },
+    { path: "/chat", view: Chat, minRole: roles.user, style: "chat", }, // this route for websocket chat
     { path: "/post/:postID", view: Post, minRole: roles.guest, style: "post" },
   ];
 
@@ -79,6 +70,7 @@ const router = async () => {
   let match = potentialMatches.find(
     (potentialMatches) => potentialMatches.result !== null
   );
+  
   if (!match) {
     Utils.showError(404, "The page you requested does not exist");
     return;
@@ -87,18 +79,15 @@ const router = async () => {
   const isLogged = await fetcher.isLoggedIn();
   if (
     isLogged &&
-    (match.route.path == "/sign-in" || match.route.path == "/sign-up"|| match.route.path == "/log-out")
+    (match.route.path == "/sign-in" || match.route.path == "/sign-up" || match.route.path == "/log-out")
   ) {
     navigateTo("/");
     return;
   }
 
-  // Check if the current view is HomeView
   const view = new match.route.view(getParams(match), user);
-  // Remove previous view-specific styles
   view.removeStyles();
 
-  // Add new view-specific style
   if (match.route.style) {
     view.addStyle(match.route.style);
   }
@@ -114,7 +103,6 @@ const router = async () => {
     match.route.view === CreatePost ||
     match.route.view === Chat
   ) {
-    // Load Navbar
     const NavBarView = new NavBar(null, user);
     document.querySelector("#navbar").innerHTML = await NavBarView.getHtml();
     NavBarView.init();
@@ -123,7 +111,6 @@ const router = async () => {
     view.addStyle("main-content");
     view.addStyle("post-card");
 
-    // Load Sidebar
     let sideBarHtml = "";
     let SideBarView;
     if (match.route.view === Home) {
@@ -137,7 +124,6 @@ const router = async () => {
       sideBarHtml + (await view.getHtml());
     SideBarView?.init();
   } else {
-    // Clear navbar and sidebar if not HomeView
     document.querySelector("#navbar").innerHTML = "";
     document.querySelector("#app").innerHTML = await view.getHtml();
   }

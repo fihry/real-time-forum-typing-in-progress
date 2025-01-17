@@ -60,11 +60,10 @@ func (m *Manager) ReadFromClient(message *entity.Message,id int,status *int){
 	if conn == nil {
 		*status = 404
 		return
-	}
-	*status = 200
+	}	
 	err := conn.ReadJSON(message)
 	if err != nil {
 		*status = 500
-		log.Println(err)
+		return
 	}
 }
