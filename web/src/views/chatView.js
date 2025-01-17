@@ -8,11 +8,9 @@ export default class extends AbstractView {
     // Initialize class properties
     this.contacts = [];
     this.messages = [];
-    this.contacter = {};
+    this.contacter = this.contacts[0] || {};
     this.sender = {};
     this.ws = Ws;
-    this.ofset = 0;
-    this.limit = 10;
   }
 
   async getHtml() {
@@ -24,32 +22,35 @@ export default class extends AbstractView {
         </div>
         <div class="container-chat">
           <div class="chat-messages" id="chat-messages"></div>
+          <div class="chat-bottom-sideBar">
+          <div id="showError" class="error-message"></div>
           <form id="chat-form" class="chat-form">
             <input type="text" id="message" class="chat-input" placeholder="Enter your message" required>
             <button type="submit" class="chat-button">Send</button>
           </form>
-          <div id="showError" class="error"></div>
+          </div>
         </div>
       </div>
     `;
   }
 
-  // Initialize the chat view
   async init() {
     const showError = document.getElementById("showError");
     const chatUsers = document?.querySelector(".chat-users");
+    const chatMessages = document.getElementById("chat-messages");
 
     // WebSocket Event Handlers
     this.ws = new WebSocket(`ws://${window.location.host}/api/ws/chat`);
     this.ws.onopen = () => {
-      console.log("Connected to chat server");
-      showError.textContent = "Connected to chat server";
+      console.log("Connected to WebSocket server");
     };
 
     this.ws.onmessage = (event) => this.handleMessage(event, chatUsers, showError);
     this.ws.onerror = (event) => this.handleError(event, showError);
     this.ws.onclose = (event) => this.handleClose(event, showError);
     this.sendPing();
+    this.removeMessagesBtn();
+
     // Reset error message
     showError.textContent = "";
   }
@@ -65,22 +66,21 @@ export default class extends AbstractView {
       case "get_contacts":
         this.contacts = data.Contacts;
         this.displayContacts(chatUsers);
+        if (this.contacts[0]) {
+          this.contacter = this.contacts[0];
+          this.loadMessages();
+        }
         break;
       case "get_messages":
         this.messages = data.Messages;
         this.displayMessages();
         this.addActiveClass();
-        this.moveContactToTop(this.contacter);
         break;
       case "new_message":
         this.displayMessage(data);
-        this.moveContactToTop(this.contacter);
         break;
       case "pong":
         console.log("Received pong from server");
-        break;
-      case "error":
-        showError.textContent = data.message;
         break;
       default:
         console.log("Unknown action:", data.action);
@@ -98,7 +98,10 @@ export default class extends AbstractView {
           contactElement.className = "chat-user";
           // add class based on status online/offline
           contactElement.classList.add(contact.status === "online" ? "online" : "offline");
-          contactElement.innerHTML = `<div class="user-nickname">${contact.nickname}</div>`;
+          const initials = contact.nickname.slice(0, 1).toUpperCase() + contact.nickname.slice(1, 2);
+          contactElement.innerHTML = `
+            <div class="user-avatar">${initials}</div>
+            <div class="user-nickname">${contact.nickname}</div>`;
           contactElement.addEventListener("click", () => this.selectContact(contact));
           chatUsers.appendChild(contactElement);
         }
@@ -106,6 +109,7 @@ export default class extends AbstractView {
     }
     this.addActiveClass();
   }
+
 
   // Select a contact and load their messages
   selectContact(contact) {
@@ -192,9 +196,6 @@ export default class extends AbstractView {
         showError.textContent = "Message cannot be empty.";
       }
     });
-    // } else {
-    //   showError.textContent = "Contact is offline.";
-    // }
   }
 
   // send message to the server to get the new status of the contacts at every 5 seconds
@@ -206,28 +207,6 @@ export default class extends AbstractView {
     }, 5000);
   }
 
-  // add number of messages a side of the contact name
-  addNumberOfMessages() {
-    let n = 1;
-    const chatUsers = document.querySelectorAll(".chat-user");
-    chatUsers.forEach(user => {
-      const badge = document.createElement("span");
-      badge.className = "badge";
-      badge.textContent = `${n++}`;
-      user.appendChild(badge);
-    });
-    this.ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      if (data.action === "new_message") {
-        if (data.receiver_id === this.contacter.id) {
-          const activeUser = document.querySelector(".chat-user.active .badge");
-          if (activeUser) {
-            activeUser.textContent = `${parseInt(activeUser.textContent) + 1}`;
-          }
-        }
-      }
-    };
-  }
 
   // add active class to the selected contact
   addActiveClass() {
@@ -241,6 +220,7 @@ export default class extends AbstractView {
       });
     });
   }
+
 
   // remove the messages-btn from the navbar when page in chat
   removeMessagesBtn() {

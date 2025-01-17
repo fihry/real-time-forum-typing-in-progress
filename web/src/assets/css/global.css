@@ -17,9 +17,9 @@
 }
 
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-  background-color:var(--background-primary);
+  width: 5px;
+    height: 5px;
+    background-color: transparent
 }
 
 ::-webkit-scrollbar-thumb {
