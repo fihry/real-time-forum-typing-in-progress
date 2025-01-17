@@ -39,7 +39,20 @@
   font-weight: 600;
   transition: background-color 0.3s ease;
 }
+.notification {
+  position: relative;
+}
 
+.navbar .btn .badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 10px;
+  height: 10px;
+  background-color: #1ec92c;
+  color: red;
+  border-radius: 50%;
+}
 
 .btn .register {
   background-color: var(--accent-color);

@@ -1,19 +1,19 @@
 import AbstractView from "./AbstractView.js";
 import Utils from "../pkg/Utils.js";
 import fetcher from "../pkg/fetcher.js";
+import { Ws } from "./chatView.js";
 
 export default class extends AbstractView {
   constructor(params, user) {
     super(params);
     this.user = user;
+    this.ws = Ws;
   }
 
   async getHtml() {
     const isAuthorized = await fetcher.isLoggedIn();
     return `
         <div class="logo" id="logo">Forum App</div>
-
-
         <div id="nav-auth-links" class="${isAuthorized ? "hidden" : ""}">
             <button id="login-btn" class="btn login">Login</button>
             <button id="register-btn" class="btn register">Register</button>
@@ -58,37 +58,34 @@ export default class extends AbstractView {
         window.location.href = "/sign-up";
       });
     }
-    // }
-    // Initialize the ws connection
-    const ws = new WebSocket("ws://localhost:8089/api/ws/chat");
-    ws.onopen = () => {
-      console.log("Connected to chat server");
-      setInterval(() => {
-        ws.send(JSON.stringify({ action: "ping" }));
-      }, 5000); // Send ping every 5 seconds
-    };
+
+    // WebSocket connection for chat notifications
+    if (this.ws.readyState === WebSocket.OPEN) {
+      console.log("WebSocket is already open");
+    } else {
+      this.ws.onopen = () => {
+        console.log("Connected to chat server");
+      };
+    }
+
     let n = 1;
-    ws.onmessage = (event) => {
-      // add netification to the messages button
-      console.log("WebSocket message received:", event.data
-      );
+    this.ws.onmessage = (event) => {
+      // add notification to the messages button
+      console.log("WebSocket message received:", event.data);
       const data = JSON.parse(event.data);
       if (data.action === "new_message") {
         const messagesBtn = document.querySelector("#messages-btn");
         messagesBtn.classList.add("notification");
-        // geve this badge a number
-
-        messagesBtn.innerHTML = `messages <span class='badge'>${n++}</span>`;
+        // give this badge a number
+        messagesBtn.innerHTML = `messages <span id='badge'>${n++}</span>`;
         messagesBtn.addEventListener("click", () => {
           messagesBtn.classList.remove("notification");
         });
       }
     };
-    ws.onerror = (event) => {
+
+    this.ws.onerror = (event) => {
       console.error("WebSocket error:", event);
     };
-
-
   }
 }
-

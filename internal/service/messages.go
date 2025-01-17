@@ -24,12 +24,12 @@ func newMessageService(messageRepo *repository.Repository) *MessageService {
 	return &MessageService{Repository: messageRepo, Manager: ws.NewManager()}
 }
 
-func (s *MessageService) GetContactsthasNotMessage(ctx context.Context, userID uint, limit, offset int) ([]entity.Contact, error) {
-	return s.Repository.Message.GetContactsthasNotMessage(ctx, userID, limit, offset)
+func (s *MessageService) GetContactsOrderedByLastMessage(ctx context.Context, userID uint, limit, offset int) ([]entity.Contact, int, error) {
+	return s.Repository.Message.GetContactsOrderedByLastMessage(ctx, userID, limit, offset)
 }
 
-func (s *MessageService) GetContactsOrderedByLastMessage(ctx context.Context, userID uint, limit, offset int) ([]entity.Contact, error) {
-	return s.Repository.Message.GetContactsOrderedByLastMessage(ctx, userID, limit, offset)
+func (s *MessageService) GetContactsNotContacted(ctx context.Context, userID uint, limit, offset int) ([]entity.Contact, int, error) {
+	return s.Repository.Message.GetContactsNotContacted(ctx, userID, limit, offset)
 }
 
 func (s *MessageService) GetAllContacts(ctx context.Context, userID uint) ([]entity.Contact, int, error) {
@@ -50,11 +50,24 @@ func (s *MessageService) Websocket(conn *websocket.Conn, ctx context.Context, se
 	if !ok {
 		return fmt.Errorf("invalid user ID in context")
 	}
-	log.Printf("User with ID %d connected", id)
 
 	// Add client to manager
 	s.Manager.AddClient(id, conn)
 	defer s.Manager.RemoveClient(id)
+	
+	var user entity.Contact
+	user,_, err := s.GetUserByID(ctx, id)
+	if err != nil {
+		log.Printf("Error getting user: %v", err)
+		return fmt.Errorf("error occurred while getting user: %v", err)
+	}
+	user.Status	= "online"
+	user.Action = "get_user"
+
+	if err := conn.WriteJSON(user); err != nil {
+		log.Printf("Error sending user to client: %v", err)
+		return fmt.Errorf("error occurred while sending user: %v", err)
+	}
 
 	// Get all contacts from the database and add status if online or offline
 
@@ -114,7 +127,7 @@ func (s *MessageService) Websocket(conn *websocket.Conn, ctx context.Context, se
 				}
 			}()
 		case "ping":
-			
+
 			// send the new if some client changes the status
 			go func() {
 				contactsOrder, err := getContacts(ctx, s, id, conn)
@@ -133,11 +146,19 @@ func (s *MessageService) Websocket(conn *websocket.Conn, ctx context.Context, se
 }
 
 func getContacts(ctx context.Context, s *MessageService, id int, conn *websocket.Conn) ([]entity.Contact, error) {
-	contacts, _, err := s.GetAllContacts(ctx, uint(id))
+	contacts, _, err :=s.GetContactsOrderedByLastMessage(ctx, uint(id), 40, 0)
 	if err != nil {
 		log.Printf("Error getting contacts: %v", err)
 		return nil, err
 	}
+	notcontated_contacts, _, err := s.GetContactsNotContacted(ctx, uint(id), 40, 0)
+	if err != nil {
+		log.Printf("Error getting contacts: %v", err)
+		return nil, err
+	}
+	contacts = append(contacts, notcontated_contacts...)
+
+// Add status if online or offline
 	for i, contact := range contacts {
 		s.Manager.Mtx.RLock()
 		online := s.Manager.GetClient(int(contact.ID)) != nil

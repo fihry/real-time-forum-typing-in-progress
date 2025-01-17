@@ -46,8 +46,8 @@ type Comment interface {
 type Message interface {
 	GetAllContacts(ctx context.Context, userID uint) ([]entity.Contact, int, error)
 	CreateMessage(ctx context.Context, input entity.Message) (int, error)
-	GetContactsthasNotMessage(ctx context.Context, userID uint, limit, offset int) ([]entity.Contact, error)
-	GetContactsOrderedByLastMessage(ctx context.Context, userID uint, limit, offset int)([]entity.Contact, error)
+	GetContactsOrderedByLastMessage(ctx context.Context, userID uint, limit, offset int) ([]entity.Contact, int, error)
+	GetContactsNotContacted(ctx context.Context, userID uint, limit, offset int) ([]entity.Contact, int, error) 
 	GetMessagesBySenderIDAndReceiverID(ctx context.Context, senderID, receiverID uint, limit, offset int) ([]entity.Message, int, error)
 }
 type key string

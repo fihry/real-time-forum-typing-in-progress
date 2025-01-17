@@ -9,6 +9,7 @@ type Contact struct {
 	Age       int    `json:"age"`
 	Gender    string `json:"gender"`
 	Status    string `json:"status"`
+	Action    string `json:"action"`
 	Contacted bool   `json:"contacted"`
 }
 
