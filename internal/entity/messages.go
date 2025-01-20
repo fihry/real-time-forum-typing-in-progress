@@ -7,11 +7,12 @@ type Message struct {
 	Message    string `json:"message"`
 	Action     string `json:"action"`
 	CreatedAt  string `json:"created_at"`
-	Limit      int    `json:"limit"`
-	Offset     int    `json:"offset"`
+	Limit			int			`json:"limit"`
+	Offset		int   `json:"offset"`	
 }
 
 type MessagesOrder struct {
 	Messages []Message
 	Action   string `json:"action"`
+	Status   int    `json:"status"`
 }

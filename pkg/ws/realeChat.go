@@ -25,16 +25,41 @@ func NewManager() *Manager {
 
 func (m *Manager) AddClient(key int, conn *websocket.Conn) {
 	m.Client[key] = conn
+	// notify all clients that a new user has joined
+	m.Broadcast(entity.Contact{
+		ID:     uint(key),
+		Action: "change_status",
+		Status: "online",
+	})
 	log.Printf("client %d added", key)
 }
 
 func (m *Manager) RemoveClient(key int) {
 	delete(m.Client, key)
+	// notify all clients that a user has left
+	m.Broadcast(entity.Contact{
+		ID:     uint(key),
+		Action: "change_status",
+		Status: "offline",
+	})
 	log.Printf("client %d removed", key)
 }
 
 func (m *Manager) GetClient(key int) *websocket.Conn {
+	m.Mtx.RLock()
+	defer m.Mtx.RUnlock()
 	return m.Client[key]
+}
+
+func (m *Manager) Broadcast(message entity.Contact) {
+	m.Mtx.RLock()
+	defer m.Mtx.RUnlock()
+	for _, conn := range m.Client {
+		err := conn.WriteJSON(message)
+		if err != nil {
+			log.Printf("error writing to client: %v", err)
+		}
+	}
 }
 
 func (m *Manager) GetonlineClients(onlineContacts *[]int){

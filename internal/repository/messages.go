@@ -3,7 +3,9 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"log"
 	"net/http"
+	"time"
 
 	"forum/internal/entity"
 )
@@ -24,125 +26,81 @@ func (r *messageRepo) CreateMessage(ctx context.Context, input entity.Message) (
 		return http.StatusInternalServerError, err
 	}
 	defer prep.Close()
+	input.CreatedAt = time.Now().Format("2006-01-02 15:04:05")
 	if _, err = prep.ExecContext(ctx, input.SenderID, input.ReceiverID, input.Message, input.CreatedAt); err != nil {
 		return http.StatusBadRequest, err
 	}
 	return http.StatusCreated, nil
 }
 
-func (r *messageRepo) GetAllContacts(ctx context.Context, userID uint) ([]entity.Contact, int, error) {
-	query := `SELECT id, nickname, 
-		CASE 
-			WHEN id IN (SELECT DISTINCT sender_id FROM messages WHERE receiver_id = $1) 
-			OR id IN (SELECT DISTINCT receiver_id FROM messages WHERE sender_id = $1) 
-			THEN true 
-			ELSE false 
-		END AS contacted 
-		FROM users;`
+// GetContacts retrieves both contacted and uncontacted users in a single SQL query.
+func (r *messageRepo) GetAllContacts(ctx context.Context, userID uint, limit, offset int) ([]entity.Contact, int, error) {
+	query := `
+    SELECT id, nickname, contacted
+    FROM (
+        SELECT id, nickname, true AS contacted, 
+               (SELECT MAX(created_at) 
+                FROM messages 
+                WHERE (sender_id = $1 AND receiver_id = users.id) OR 
+                      (sender_id = users.id AND receiver_id = $1)) AS last_interaction
+        FROM users
+        WHERE id IN (
+            SELECT DISTINCT sender_id FROM messages WHERE receiver_id = $1
+            UNION
+            SELECT DISTINCT receiver_id FROM messages WHERE sender_id = $1
+        )
+
+        UNION ALL
+
+        SELECT id, nickname, false AS contacted, NULL AS last_interaction
+        FROM users
+        WHERE id NOT IN (
+            SELECT DISTINCT sender_id FROM messages WHERE receiver_id = $1
+            UNION
+            SELECT DISTINCT receiver_id FROM messages WHERE sender_id = $1
+        )
+    ) AS combined
+    ORDER BY 
+        contacted DESC,
+        last_interaction DESC NULLS LAST,
+        nickname ASC
+    LIMIT $2 OFFSET $3;
+`
+
 	prep, err := r.Db.PrepareContext(ctx, query)
 	if err != nil {
 		return nil, http.StatusInternalServerError, err
 	}
 	defer prep.Close()
 
-	rows, err := prep.QueryContext(ctx, userID)
-	if err != nil {
-		return nil, http.StatusInternalServerError, err
-	}
-	defer rows.Close()
-	var contacts []entity.Contact
-	for rows.Next() {
-		var contact entity.Contact
-		if err = rows.Scan(&contact.ID, &contact.Nickname, &contact.Contacted); err != nil {
-			return nil, http.StatusInternalServerError, err
-		}
-		contacts = append(contacts, contact)
-	}
-	return contacts, http.StatusOK, nil
-}
-
-// This function get users that have contacted by the user sorted by the last message than not been contacted by the user yet sorted by the last message sorted alphabetically
-func (r *messageRepo) GetContactsOrderedByLastMessage(ctx context.Context, userID uint, limit, offset int) ([]entity.Contact, int, error) {
-	query := `SELECT id, nickname,
-		CASE
-			WHEN id IN (SELECT DISTINCT sender_id FROM messages WHERE receiver_id = $1)
-			OR id IN (SELECT DISTINCT receiver_id FROM messages WHERE sender_id = $1)
-			THEN true
-			ELSE false
-		END AS contacted
-		FROM users
-		WHERE id IN (SELECT DISTINCT sender_id FROM messages WHERE receiver_id = $1)
-		OR id IN (SELECT DISTINCT receiver_id FROM messages WHERE sender_id = $1)
-		ORDER BY (SELECT MAX(created_at) FROM messages WHERE (sender_id = $1 AND receiver_id = users.id) OR (sender_id = users.id AND receiver_id = $1)) DESC
-		LIMIT $2 OFFSET $3;`
-	prep, err := r.Db.PrepareContext(ctx, query)
-	if err != nil {
-		return nil, http.StatusInternalServerError, err
-	}
-	defer prep.Close()
-
+	// Execute the query
 	rows, err := prep.QueryContext(ctx, userID, limit, offset)
 	if err != nil {
 		return nil, http.StatusInternalServerError, err
 	}
 	defer rows.Close()
 
+	// Collect the contacts
 	var contacts []entity.Contact
 	for rows.Next() {
-
 		var contact entity.Contact
-		if err = rows.Scan(&contact.ID, &contact.Nickname, &contact.Contacted); err != nil {
+		if err := rows.Scan(&contact.ID, &contact.Nickname, &contact.Contacted); err != nil {
 			return nil, http.StatusInternalServerError, err
 		}
 		contacts = append(contacts, contact)
 	}
+
+	// If no contacts are found, return 404
+	if len(contacts) == 0 {
+		return nil, http.StatusNotFound, nil
+	}
+
 	return contacts, http.StatusOK, nil
 }
 
-
-// this function get all contacts thas not contact with them yet
-func (r *messageRepo) GetContactsNotContacted(ctx context.Context, userID uint, limit, offset int) ([]entity.Contact, int, error) {
-	query := `SELECT id, nickname,
-		CASE	
-			WHEN id IN (SELECT DISTINCT sender_id FROM messages WHERE receiver_id = $1)
-			OR id IN (SELECT DISTINCT receiver_id FROM messages WHERE sender_id = $1)
-			THEN true
-			ELSE false
-		END AS contacted
-		FROM users
-		WHERE id NOT IN (SELECT DISTINCT sender_id FROM messages WHERE receiver_id = $1)
-		AND id NOT IN (SELECT DISTINCT receiver_id FROM messages WHERE sender_id = $1)
-		ORDER BY nickname ASC
-		LIMIT $2 OFFSET $3;`
-	prep, err := r.Db.PrepareContext(ctx, query)
-	if err != nil {
-		return nil, http.StatusInternalServerError, err
-	}
-	defer prep.Close()
-
-	rows, err := prep.QueryContext(ctx, userID, limit, offset)
-	if err != nil {
-		return nil, http.StatusInternalServerError, err
-	}
-	defer rows.Close()
-
-	var contacts []entity.Contact
-	for rows.Next() {
-		var contact entity.Contact
-		if err = rows.Scan(&contact.ID, &contact.Nickname, &contact.Contacted); err != nil {
-			return nil, http.StatusInternalServerError, err
-		}
-		contacts = append(contacts, contact)
-	}
-	return contacts, http.StatusOK, nil
-}
-
-
-
-
-// GetMessagesBySenderIDAndReceiverID will return all messages between two users
+// GetMessagesBySenderIDAndReceiverID retrieves all messages between two users
 func (r *messageRepo) GetMessagesBySenderIDAndReceiverID(ctx context.Context, senderID, receiverID uint, limit, offset int) ([]entity.Message, int, error) {
-	query := `SELECT id, sender_id, receiver_id, message, created_at FROM messages WHERE (sender_id = $1 AND receiver_id = $2) OR (sender_id = $2 AND receiver_id = $1) LIMIT $3 OFFSET $4;`
+	query := `SELECT id, sender_id, receiver_id, message, created_at FROM messages WHERE (sender_id = $1 AND receiver_id = $2) OR (sender_id = $2 AND receiver_id = $1) ORDER BY created_at DESC LIMIT $3 OFFSET $4;`
 	prep, err := r.Db.PrepareContext(ctx, query)
 	if err != nil {
 		return nil, http.StatusInternalServerError, err
@@ -151,10 +109,10 @@ func (r *messageRepo) GetMessagesBySenderIDAndReceiverID(ctx context.Context, se
 
 	rows, err := prep.QueryContext(ctx, senderID, receiverID, limit, offset)
 	if err != nil {
-		return nil, http.StatusInternalServerError, err
+		log.Printf("Error in get messages: %v", err)
+		return nil, http.StatusBadRequest, err
 	}
 	defer rows.Close()
-
 	var messages []entity.Message
 	for rows.Next() {
 		var message entity.Message
@@ -163,5 +121,11 @@ func (r *messageRepo) GetMessagesBySenderIDAndReceiverID(ctx context.Context, se
 		}
 		messages = append(messages, message)
 	}
+
+	// if not still any messages found by limit and offset
+	if len(messages) == 0 {
+		return nil, http.StatusNotFound, nil
+	}
+
 	return messages, http.StatusOK, nil
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"log"
 	"net/http"
 
 	"forum/internal/entity"
@@ -129,6 +130,7 @@ func (r *PostRepository) GetAllByUserID(ctx context.Context, userID uint, limit,
 	defer prep.Close()
 	rows, err := prep.QueryContext(ctx, userID, limit, offset)
 	if err != nil {
+		log.Println("Error in get all by user id")
 		return nil, http.StatusBadRequest, err
 	}
 	for rows.Next() {

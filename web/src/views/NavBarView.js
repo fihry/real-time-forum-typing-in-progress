@@ -1,7 +1,7 @@
 import AbstractView from "./AbstractView.js";
 import Utils from "../pkg/Utils.js";
 import fetcher from "../pkg/fetcher.js";
-import { Ws } from "./chatView.js";
+import Ws from "../views/chatView.js";  
 
 export default class extends AbstractView {
   constructor(params, user) {

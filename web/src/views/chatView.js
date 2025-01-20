@@ -8,9 +8,19 @@ export default class extends AbstractView {
     // Initialize class properties
     this.contacts = [];
     this.messages = [];
-    this.contacter = this.contacts[0] || {};
+    this.contacter = {};
     this.sender = {};
     this.ws = Ws;
+    // for message pagination
+    this.msgOffset = 0;
+    this.msgLimit = 20;
+    this.msgStatus = "";
+    this.isThrottledMessages = false;
+    // for contacts pagination
+    this.cntOffset = 0;
+    this.cntLimit = 20;
+    this.cntStatus = "";
+    this.isThrottledContacts = false;
   }
 
   async getHtml() {
@@ -37,21 +47,25 @@ export default class extends AbstractView {
   async init() {
     const showError = document.getElementById("showError");
     const chatUsers = document?.querySelector(".chat-users");
-    const chatMessages = document.getElementById("chat-messages");
 
     // WebSocket Event Handlers
-    this.ws = new WebSocket(`ws://${window.location.host}/api/ws/chat`);
     this.ws.onopen = () => {
       console.log("Connected to WebSocket server");
+      this.ws.send(JSON.stringify({
+        action: "get_contacts",
+        offset: this.cntOffset,
+        limit: this.cntLimit
+      }));
     };
 
-    this.ws.onmessage = (event) => this.handleMessage(event, chatUsers, showError);
-    this.ws.onerror = (event) => this.handleError(event, showError);
-    this.ws.onclose = (event) => this.handleClose(event, showError);
-    this.sendPing();
+    this.ws.onmessage = (event) => {
+      this.handleMessage(event, chatUsers, showError);
+    };
+    this.loadContacts();
     this.removeMessagesBtn();
-
-    // Reset error message
+    // Error handling for WebSocket connection
+    this.ws.onclose = (event) => this.handleClose(event, showError);
+    this.ws.onerror = (event) => this.handleError(event, showError); 
     showError.textContent = "";
   }
 
@@ -64,26 +78,44 @@ export default class extends AbstractView {
         console.log("sender", this.sender);
         break;
       case "get_contacts":
-        this.contacts = data.Contacts;
-        this.displayContacts(chatUsers);
-        if (this.contacts[0]) {
-          this.contacter = this.contacts[0];
-          this.loadMessages();
+        if (data && data.status !== 404) {
+          this.contacts = this.contacts.concat(data.Contacts);
+          this.cntOffset += data.Contacts.length;
         }
+        this.getContacter();
+        if (this.contacter) {
+          this.loadMessages();
+        } else if (data.status == 404) {
+          this.cntStatus = 404;
+          this.isThrottledContacts = false;
+        }
+        this.displayContacts(chatUsers);
         break;
       case "get_messages":
-        this.messages = data.Messages;
-        this.displayMessages();
-        this.addActiveClass();
+        if (data && data.status !== 404) {
+          //  append messages to the existing messages
+          this.messages = this.messages.concat(data.Messages);
+          this.msgOffset += this.messages.length;
+        } else if (data.status == 404 || data.Messages.length === 0) {
+          this.msgStatus = 404;
+          this.isThrottledMessages = false;
+        }
+        this.displayMessages(showError);
         break;
       case "new_message":
-        this.displayMessage(data);
+        if (data.sender_id === this.contacter.id) {
+          this.messages.push(data);
+          showError.textContent = "new message";
+          this.displayMessage(data);
+        }
         break;
-      case "pong":
-        console.log("Received pong from server");
+      case "change_status":
+        const contact = this.contacts.find(contact => contact.id === data.id);
+        if (contact) {
+          contact.status = data.status;
+          this.displayContacts(chatUsers);
+        }
         break;
-      default:
-        console.log("Unknown action:", data.action);
     }
     this.sendMessage(showError);
   }
@@ -110,12 +142,17 @@ export default class extends AbstractView {
     this.addActiveClass();
   }
 
-
   // Select a contact and load their messages
   selectContact(contact) {
+    history.pushState(null, null, `/chat/${contact.id}`);
+    this.msgOffset = 0;
+    this.msgLimit = 20;
+    this.msgStatus = "";
+    this.isThrottledMessages = false;
+    this.messages = [];
     this.contacter = contact;
     this.loadMessages();
-    // window.location.pathname = `/chat/${contact.nickname}`;
+    this.addActiveClass();
   }
 
   // Load messages for the selected contact
@@ -125,14 +162,36 @@ export default class extends AbstractView {
     if (this.contacter.id) {
       this.ws.send(JSON.stringify({
         action: "get_messages",
-        receiver_id: this.contacter.id
+        receiver_id: this.contacter.id,
+        offset: this.msgOffset,
+        limit: this.msgLimit
       }));
     }
+    if (this.msgStatus === 404) {
+      this.isThrottledMessages = false;
+    };
+    this.throttleMessages();
+  }
+
+  loadContacts() {
+    const chatUsers = document.querySelector(".chat-users");
+    chatUsers.innerHTML = "";
+    this.ws.send(JSON.stringify({
+      action: "get_contacts",
+      offset: this.cntOffset,
+      limit: this.cntLimit
+    }));
+    if (this.cntStatus === 404) {
+      this.isThrottledContacts = false;
+    }
+    this.throttleContacts();
   }
 
   // Display chat messages
-  displayMessages() {
+  displayMessages(showError) {
     const chatMessages = document.getElementById("chat-messages");
+    // reverse the messages array to display the latest message at the bottom
+    this.messages.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
     this.messages?.forEach(message => {
       const messageElement = document.createElement("div");
       console.log("message", message);
@@ -149,33 +208,32 @@ export default class extends AbstractView {
       messageElement.prepend(senderElement);
       chatMessages.appendChild(messageElement);
     });
+    showError.textContent = "";
     chatMessages.scrollTop = chatMessages.scrollHeight; // Auto-scroll to bottom
   }
 
   // Display a single message (from local input)
   displayMessage(message) {
-    const chatMessages = document.getElementById("chat-messages");
-    const messageElement = document.createElement("div");
-    messageElement.className = `chat-message ${message.sender_id === this.contacter.id ? "chat-user1" : "chat-user2"}`;
-    messageElement.innerHTML = `
-    <div class="time_message">${new Date().toLocaleTimeString()}</div>
-      <div class="message-content">
-        <p>${this.sanitizeMessage(message.message)}</p>
-      </div>
-    `;
-    const senderElement = document.createElement("div");
-    const timeElement = document.createElement("div");
-    senderElement.className = "message-sender";
-    timeElement.className = "message-time";
-    senderElement.textContent = message.sender_id === this.contacter.id ? this.contacter.nickname : "You";
-    messageElement.prepend(senderElement);
-    chatMessages.appendChild(messageElement);
-    chatMessages.scrollTop = chatMessages.scrollHeight; // Auto-scroll to bottom
+    if (this.contacter.id === message.receiver_id) {
+      const chatMessages = document.getElementById("chat-messages");
+      const messageElement = document.createElement("div");
+      messageElement.className = "chat-message chat-user2";
+      messageElement.innerHTML = `
+        <div class="message-content">
+          <p>${this.sanitizeMessage(message.message)}</p>
+        </div>
+      `;
+      const senderElement = document.createElement("div");
+      senderElement.className = "message-sender";
+      senderElement.textContent = "You";
+      messageElement.prepend(senderElement);
+      chatMessages.appendChild(messageElement);
+      chatMessages.scrollTop = chatMessages.scrollHeight; // Auto-scroll to bottom
+    }
   }
 
   // Send a message to the selected contact
   sendMessage(showError) {
-    // if (this.contacter.status === "online") {
     const chatForm = document.getElementById("chat-form");
     chatForm.addEventListener("submit", (event) => {
       event.preventDefault();
@@ -198,31 +256,72 @@ export default class extends AbstractView {
     });
   }
 
-  // send message to the server to get the new status of the contacts at every 5 seconds
-  sendPing() {
-    setInterval(() => {
-      this.ws.send(JSON.stringify({
-        action: "ping"
-      }));
-    }, 5000);
+  // this function get the contacterId frome the location path 
+  getContacter() {
+    const path = window.location.pathname;
+    const id = path.split("/")[2];
+    this.contacter = this.contacts.find(contact => contact.id == id);
   }
 
+  getContactsByLimit() {
+    this.ws.send(JSON.stringify({
+      action: "get_contacts",
+      offset: this.cntOffset,
+      limit: this.cntLimit
+    }));
+  }
 
-  // add active class to the selected contact
-  addActiveClass() {
-    const chatUsers = document.querySelectorAll(".chat-user");
-    chatUsers.forEach(user => {
-      user.addEventListener("click", () => {
-        chatUsers.forEach(user => {
-          user.classList.remove("active");
-        });
-        user.classList.add("active");
-      });
+  throttleContacts() {
+    const chatUsers = document.querySelector(".chat-users");
+    if (this.cntStatus === 404) {
+      return;
+    }
+    chatUsers.addEventListener("scroll", () => {
+      if (this.isThrottledContacts) return;
+      this.isThrottledContacts = true;
+
+      setTimeout(() => {
+        if (this.cntStatus !== 404) {
+          this.loadContacts();
+        }
+        this.isThrottledContacts = false;
+      }, 200);
     });
   }
 
+  throttleMessages() {
+    const chatMessages = document.getElementById("chat-messages");
+    if (this.msgStatus === 404) {
+      return;
+    }
+    chatMessages.addEventListener("scroll", () => {
+      if (this.isThrottledMessages) return;
+      this.isThrottledMessages = true;
 
-  // remove the messages-btn from the navbar when page in chat
+      setTimeout(() => {
+        if (chatMessages.scrollTop <= 100 && this.msgStatus !== 404) {
+          this.loadMessages();
+        }
+        this.isThrottledMessages = false;
+      }, 200);
+    });
+  }
+
+  // Add active class to the selected contact in the sidebar
+
+  addActiveClass() {
+    // get elements with class name chat-user that ahve the nickname of the contacter 
+    const chatUsers = document.querySelectorAll(".chat-user");
+    chatUsers.forEach(chatUser => {
+      if (chatUser.querySelector(".user-nickname").textContent === this.contacter.nickname) {
+        chatUser.classList.add("active");
+      } else {
+        chatUser.classList.remove("active");
+      }
+    });
+  }
+
+  // Remove the messages-btn from the navbar when the page is in chat
   removeMessagesBtn() {
     const messagesBtn = document.querySelector("#messages-btn");
     if (messagesBtn) {

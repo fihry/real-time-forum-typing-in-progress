@@ -16,4 +16,5 @@ type Contact struct {
 type ConstacsOrder struct {
 	Contacts []Contact 
 	Action	 string `json:"action"`
+	Status   int    `json:"status"`
 }
