@@ -2,8 +2,9 @@ package entity
 
 type Message struct {
 	ID         int    `json:"id"`
-	SenderID   int    `json:"sender_id"`
-	ReceiverID int    `json:"receiver_id"`
+	SenderID   uint    `json:"sender_id"`
+	Nickname   string `json:"nickname"`
+	ReceiverID uint    `json:"receiver_id"`
 	Message    string `json:"message"`
 	Action     string `json:"action"`
 	CreatedAt  string `json:"created_at"`

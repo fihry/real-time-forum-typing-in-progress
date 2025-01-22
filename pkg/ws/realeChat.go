@@ -12,18 +12,18 @@ import (
 )
 
 type Manager struct {
-	Client map[int]*websocket.Conn
+	Client map[uint]*websocket.Conn
 	Mtx sync.RWMutex
 }
 
 func NewManager() *Manager {
 	return &Manager{
-		Client: make(map[int]*websocket.Conn),
+		Client: make(map[uint]*websocket.Conn),
 		Mtx:    sync.RWMutex{},
 	}
 }
 
-func (m *Manager) AddClient(key int, conn *websocket.Conn) {
+func (m *Manager) AddClient(key uint, conn *websocket.Conn) {
 	m.Client[key] = conn
 	// notify all clients that a new user has joined
 	m.Broadcast(entity.Contact{
@@ -34,8 +34,13 @@ func (m *Manager) AddClient(key int, conn *websocket.Conn) {
 	log.Printf("client %d added", key)
 }
 
-func (m *Manager) RemoveClient(key int) {
-	delete(m.Client, key)
+func (m *Manager) RemoveClient(key uint) {
+	m.Mtx.Lock()
+	if conn, ok := m.Client[key]; ok {
+		conn.Close()
+		delete(m.Client, key)
+	}
+	m.Mtx.Unlock()
 	// notify all clients that a user has left
 	m.Broadcast(entity.Contact{
 		ID:     uint(key),
@@ -45,7 +50,7 @@ func (m *Manager) RemoveClient(key int) {
 	log.Printf("client %d removed", key)
 }
 
-func (m *Manager) GetClient(key int) *websocket.Conn {
+func (m *Manager) GetClient(key uint) *websocket.Conn {
 	m.Mtx.RLock()
 	defer m.Mtx.RUnlock()
 	return m.Client[key]
@@ -59,14 +64,6 @@ func (m *Manager) Broadcast(message entity.Contact) {
 		if err != nil {
 			log.Printf("error writing to client: %v", err)
 		}
-	}
-}
-
-func (m *Manager) GetonlineClients(onlineContacts *[]int){
-	m.Mtx.RLock()
-	defer m.Mtx.RUnlock()
-	for key := range m.Client {
-		*onlineContacts = append(*onlineContacts, key)
 	}
 }
 

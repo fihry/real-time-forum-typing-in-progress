@@ -39,9 +39,6 @@
   font-weight: 600;
   transition: background-color 0.3s ease;
 }
-.notification {
-  position: relative;
-}
 
 .navbar .btn .badge {
   position: absolute;

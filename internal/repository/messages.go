@@ -34,7 +34,7 @@ func (r *messageRepo) CreateMessage(ctx context.Context, input entity.Message) (
 }
 
 // GetContacts retrieves both contacted and uncontacted users in a single SQL query.
-func (r *messageRepo) GetAllContacts(ctx context.Context, userID uint, limit, offset int) ([]entity.Contact, int, error) {
+func (r *messageRepo) GetAllContacts(ctx context.Context, userID uint) ([]entity.Contact, int, error) {
 	query := `
     SELECT id, nickname, contacted
     FROM (
@@ -63,9 +63,7 @@ func (r *messageRepo) GetAllContacts(ctx context.Context, userID uint, limit, of
     ORDER BY 
         contacted DESC,
         last_interaction DESC NULLS LAST,
-        nickname ASC
-    LIMIT $2 OFFSET $3;
-`
+        nickname ASC;`
 
 	prep, err := r.Db.PrepareContext(ctx, query)
 	if err != nil {
@@ -74,7 +72,7 @@ func (r *messageRepo) GetAllContacts(ctx context.Context, userID uint, limit, of
 	defer prep.Close()
 
 	// Execute the query
-	rows, err := prep.QueryContext(ctx, userID, limit, offset)
+	rows, err := prep.QueryContext(ctx, userID)
 	if err != nil {
 		return nil, http.StatusInternalServerError, err
 	}

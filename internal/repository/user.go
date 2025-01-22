@@ -30,7 +30,7 @@ func (r *UserRepository) Create(ctx context.Context, user entity.User) (int, err
 	return http.StatusCreated, nil
 }
 
-func (r *UserRepository) GetUserByID(ctx context.Context, id int) (entity.Contact, int, error) {
+func (r *UserRepository) GetUserByID(ctx context.Context, id uint) (entity.Contact, int, error) {
 	query := `SELECT id, nickname, email, firstName , lastName , gender , age FROM users WHERE id = $1 LIMIT 1;`
 	prep, err := r.db.PrepareContext(ctx, query)
 	Contact := entity.Contact{}

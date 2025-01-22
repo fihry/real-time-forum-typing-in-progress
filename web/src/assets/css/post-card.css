@@ -83,6 +83,7 @@
 }
 
 .post-category {
+  height: 40px;
   padding: 5px 10px;
   font-weight: bold;
   font-size: 0.7rem;

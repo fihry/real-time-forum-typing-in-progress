@@ -10,7 +10,7 @@ import (
 type User interface {
 	Create(ctx context.Context, user entity.User) (int, error)
 	GetUserIDByEmail(ctx context.Context, email string) (entity.User, int, error)
-	GetUserByID(ctx context.Context, id int) (entity.Contact, int, error)
+	GetUserByID(ctx context.Context, id uint) (entity.Contact, int, error)
 }
 
 type Session interface {
@@ -45,7 +45,7 @@ type Comment interface {
 
 type Message interface {
 	CreateMessage(ctx context.Context, input entity.Message) (int, error)
-	GetAllContacts(ctx context.Context, userID uint, limit, offset int) ([]entity.Contact, int, error)
+	GetAllContacts(ctx context.Context, userID uint) ([]entity.Contact, int, error)
 	GetMessagesBySenderIDAndReceiverID(ctx context.Context, senderID, receiverID uint, limit, offset int) ([]entity.Message, int, error)
 }
 type key string
