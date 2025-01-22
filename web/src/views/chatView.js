@@ -16,6 +16,7 @@ export default class extends AbstractView {
     this.msgStatus = "";
     this.cntOffset = 0;
     this.cntLimit = 100;
+    this.ended = false;
     this.isThrottledMessages = false;
   }
 
@@ -119,7 +120,99 @@ export default class extends AbstractView {
 
 
 
-  // Throttle the messages
+
+  // Load messages for the selected contact
+  loadMessages() {
+    const chatMessages = document.getElementById("chat-messages");
+    if (this.contacter.id) {
+      this.ws.send(JSON.stringify({
+        action: "get_messages",
+        receiver_id: this.contacter.id,
+        offset: this.msgOffset,
+        limit: this.msgLimit
+      }));
+    }
+    this.attachScrollListener();
+  }
+
+  // Load more messages when scrolling to the top
+  loadMoreMessages() {
+    if (this.isThrottledMessages || this.ended) return; // Prevent multiple requests
+
+    this.isThrottledMessages = true; // Set throttling flag
+    this.msgOffset += this.msgLimit; // Increase the offset for pagination
+
+    // Send a request to load more messages
+    this.ws.send(JSON.stringify({
+      action: "get_messages",
+      receiver_id: this.contacter.id,
+      offset: this.msgOffset,
+      limit: this.msgLimit
+    }));
+
+    // Reset throttling flag after a short delay
+    setTimeout(() => {
+      this.isThrottledMessages = false;
+    }, 200); // Adjust the timeout as needed
+  }
+
+  // Display messages for the selected contact
+  displayMessages(showError, data) {
+    const chatMessages = document.getElementById("chat-messages");
+    this.messages = this.messages.concat(data.Messages);
+    let index = this.messages.findIndex(message => message.id === data.Messages[0].id);
+    this.messages.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+    this.messages.splice(index, data.Messages.length);
+    if (data.Messages.length > 0) {
+      data.Messages.forEach(message => {
+        const messageElement = document.createElement("div");
+        messageElement.className = `chat-message ${message.sender_id === this.contacter.id ? "chat-user1" : "chat-user2"}`;
+        const time = new Date(message.created_at).toLocaleString();
+        messageElement.innerHTML = `
+        <div class="time_message">${time}</div>
+        <div class="message-content">
+          <p>${this.sanitizeMessage(message.message)}</p>
+        </div>
+      `;
+        const senderElement = document.createElement("div");
+        senderElement.className = "message-sender";
+        senderElement.textContent = message.sender_id === this.sender.id ? this.sender.nickname : this.contacter.nickname;
+        messageElement.prepend(senderElement);
+        chatMessages.prepend(messageElement); // Prepend to show new messages at the bottom
+      });
+      chatMessages.scrollTop = chatMessages.scrollHeight / 2.5; // Scroll to the bottom after loading new messages
+    } else {
+      if (this.msgOffset === 0) {
+        showError.textContent = "No messages found.";
+      } else {
+        this.ended = true; // No more messages to load
+      }
+    }
+  }
+
+
+
+  // Display messages for the selected contact
+  // Attach scroll event listener with throttling
+  attachScrollListener() {
+    const chatMessages = document.getElementById("chat-messages");
+    chatMessages.addEventListener("scroll", this.handleScroll.bind(this));
+  }
+
+  // Handle scroll event
+  handleScroll() {
+    const chatMessages = document.getElementById("chat-messages");
+
+    // Check if the user has scrolled to the top
+    if (chatMessages.scrollTop === 0 && !this.isThrottledMessages && !this.ended) {
+      setInterval(() => {
+        this.isThrottledMessages = true; // Set throttling flag
+        this.loadMoreMessages();
+      }
+        , 200);
+    }
+  }
+
 
 
   // Display contacts in the sidebar
@@ -175,34 +268,29 @@ export default class extends AbstractView {
 
   // Select a contact and load their messages
   selectContact(contact) {
+    // clear the chat messages
+    const chatMessages = document.getElementById("chat-messages");
+    chatMessages.innerHTML = "";
     history.pushState(null, null, `/chat/${contact.id}`);
+    // clean the params
     this.msgOffset = 0;
-    this.msgLimit = 20;
     this.msgStatus = "";
-    this.isThrottledMessages;
-    this.messages = [];
     this.contacter = contact;
+    this.messages = [];
+    this.ended = false;
     this.loadMessages();
     this.addActiveClass();
   }
 
-  // Load messages for the selected contact
-  loadMessages() {
+  // Load more messages when the user scrolls to the top
+  loadMoreMessages() {
     const chatMessages = document.getElementById("chat-messages");
-    chatMessages.innerHTML = "";
-    if (this.contacter.id) {
-      this.ws.send(JSON.stringify({
-        action: "get_messages",
-        receiver_id: this.contacter.id,
-        offset: this.msgOffset,
-        limit: this.msgLimit
-      }));
+    if (chatMessages.scrollTop === 0 && this.msgStatus !== 404) {
+      this.msgOffset += this.msgLimit;
+      this.loadMessages();
+    } else if (this.msgStatus === 404) {
+      this.ended = true;
     }
-    if (this.msgStatus === 404) {
-      this.isThrottledMessages = false;
-    }
-    this.throttleScroll(this.loadMoreMessages, 300);
-    chatMessages.addEventListener("scroll", this.throttleScroll);
   }
 
   loadContacts() {
@@ -249,33 +337,6 @@ export default class extends AbstractView {
     chatMessages.scrollTop = chatMessages.scrollHeight;
   }
 
-
-  // Display messages for the selected contact
-  displayMessages(showError, data) {
-    const chatMessages = document.getElementById("chat-messages");
-    if (data.Messages.length > 0) {
-      data.Messages.forEach(message => {
-        const messageElement = document.createElement("div");
-        messageElement.className = `chat-message ${message.sender_id === this.contacter.id ? "chat-user1" : "chat-user2"}`;
-        const time = new Date(message.created_at).toLocaleString();
-        messageElement.innerHTML = `
-          <div class="time_message">${time}</div>
-          <div class="message-content">
-            <p>${this.sanitizeMessage(message.message)}</p>
-          </div>
-        `;
-        const senderElement = document.createElement("div");
-        senderElement.className = "message-sender";
-        senderElement.textContent = message.sender_id === this.sender.id ? this.sender.nickname : this.contacter.nickname;
-        messageElement.prepend(senderElement);
-        chatMessages.prepend(messageElement);
-      });
-      chatMessages.scrollTop = chatMessages.scrollHeight;
-    } else {
-      showError.textContent = "No messages found.";
-    }
-  }
-
   // Send a message to the selected contact
   sendMessage(showError) {
     const chatForm = document.getElementById("chat-form");
@@ -310,57 +371,6 @@ export default class extends AbstractView {
     const path = window.location.pathname;
     const id = path.split("/")[2];
     this.contacter = this.contacts.find(contact => contact.id == id);
-  }
-
-  // Load messages for the selected contact
-  loadMessages() {
-    const chatMessages = document.getElementById("chat-messages");
-    chatMessages.innerHTML = "";
-
-    if (this.contacter.id) {
-      this.ws.send(JSON.stringify({
-        action: "get_messages",
-        receiver_id: this.contacter.id,
-        offset: this.msgOffset,
-        limit: this.msgLimit
-      }));
-    }
-
-    if (this.msgStatus === 404) {
-      this.isThrottledMessages = false;
-    }
-
-    // Attach scroll event listener with throttling to load more messages
-    this.attachScrollListener();
-  }
-
-
-  // Attach scroll event listener with throttling
-  attachScrollListener() {
-    const chatMessages = document.getElementById("chat-messages");
-    // chatMessages.removeEventListener("scroll", this.throttleScroll);
-    chatMessages.addEventListener("scroll", this.throttleScroll);
-  }
-
-  // Throttle function to limit the rate at which the scroll handler is triggered
-  throttleScroll = (() => {
-    let lastCall = 0;
-    return () => {
-      const now = Date.now();
-      if (now - lastCall >= 300 && !this.isThrottledMessages) {
-        lastCall = now;
-        this.loadMoreMessages();
-      }
-    };
-  })();
-
-  // Load more messages when the user scrolls to the top
-  loadMoreMessages() {
-    const chatMessages = document.getElementById("chat-messages");
-    if (chatMessages.scrollTop === 0 && this.msgStatus !== 404) {
-      this.msgOffset += this.msgLimit;
-      this.loadMessages();
-    }
   }
 
   // Add active class to the selected contact in the sidebar
