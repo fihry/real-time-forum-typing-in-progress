@@ -16,21 +16,6 @@
   color: var(--text-primary);
 }
 
-.navbar-search {
-  flex-grow: 1;
-  max-width: 400px;
-  margin: 0 2rem;
-}
-
-.search-input {
-  width: 100%;
-  padding: 0.5rem 1rem;
-  background-color: var(--background-primary);
-  border: 1px solid var(--border-color);
-  border-radius: 20px;
-  color: var(--text-primary);
-  font-size: 0.9rem;
-}
 
 .navbar .btn {
   padding: 0.5rem 1rem;
@@ -40,14 +25,31 @@
   transition: background-color 0.3s ease;
 }
 
+#nav-user-links {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.notification {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #ffffff18;
+  border: 1px solid #ffffff;
+  color: #ffffff;
+}
 .navbar .btn .badge {
   position: absolute;
-  top: 0;
-  right: 0;
-  width: 10px;
-  height: 10px;
-  background-color: #1ec92c;
-  color: red;
+  width: 20px;
+    height: 20px;
+    top: -10px;
+    right: -10px;
+    padding: 0.2rem;
+    background-color: #ffa704;
+    border: 1px solid #ffffff;
+    color: #ffffff;
   border-radius: 50%;
 }
 
@@ -55,7 +57,8 @@
   background-color: var(--accent-color);
   color: white;
 }
-.login ,.create{
+.login,
+.create {
   background-color: #ffffff18;
   border: 1px solid #ffffff;
   color: #ffffff;
