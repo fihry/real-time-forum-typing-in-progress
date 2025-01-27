@@ -7,6 +7,7 @@ export default class extends AbstractView {
     this.setTitle("Chat");
     // Initialize class properties
     this.contacts = [];
+    this.messages = [];
     this.contacter = {};
     this.sender = {};
     this.ws = Ws;
@@ -161,7 +162,7 @@ export default class extends AbstractView {
   // Display messages for the selected contact
   displayMessages(showError, data) {
     const chatMessages = document.getElementById("chat-messages");
-    this.messages = this.messages.concat(data.Messages);
+    this.messages.push(...data.Messages)
     let index = this.messages.findIndex(message => message.id === data.Messages[0].id);
     this.messages.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
     this.messages.splice(index, data.Messages.length);
@@ -243,8 +244,7 @@ export default class extends AbstractView {
     // create notification element and apeend it to the messages div
     const notification = document.createElement("div");
     notification.className = "notify";
-    console.log(this.sender);
-    console.log(data);
+
     notification.innerHTML = `
       <div class="notify-sender-info">
       <div class="notify-sender-avatar">${data.nickname.slice(0, 1).toUpperCase()}</div>
@@ -282,7 +282,6 @@ export default class extends AbstractView {
       </div>
     `;
     const chat_users = document.querySelectorAll(".chat-user");
-    console.log(data.nickname);
     chat_users.forEach(chat_user => {
       if (chat_user.querySelector(".user-nickname").textContent === data.nickname) {
         chat_user.appendChild(writing);
@@ -418,7 +417,6 @@ export default class extends AbstractView {
     const path = window.location.pathname;
     const id = path.split("/")[2];
     this.contacter = this.contacts.find(contact => contact.id == id);
-    this.displayMessages();
   }
 
   // Add active class to the selected contact in the sidebar
