@@ -59,13 +59,13 @@ func (m *Manager) GetClient(key uint) *websocket.Conn {
 func (m *Manager) Broadcast(message entity.Contact) {
 	m.Mtx.RLock()
 	defer m.Mtx.RUnlock()
-	for _, conn := range m.Client {
-		if (m.Client[message.ID] == conn) {
+	for id, conn := range m.Client {
+		if id == message.ID {
 			continue
 		}
 		err := conn.WriteJSON(message)
 		if err != nil {
-			log.Printf("error writing to client: %v", err)
+			log.Printf("error: %v", err)
 		}
 	}
 }
