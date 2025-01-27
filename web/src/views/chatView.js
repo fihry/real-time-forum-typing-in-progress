@@ -1,5 +1,5 @@
 import AbstractView from "./AbstractView.js";
-export const Ws = new WebSocket(`ws://${window.location.host}/api/ws/chat`);
+import Ws from "../pkg/ws.js";
 
 export default class extends AbstractView {
   constructor(params) {
@@ -10,7 +10,7 @@ export default class extends AbstractView {
     this.messages = [];
     this.contacter = {};
     this.sender = {};
-    this.ws = Ws;
+    this.ws = {};
     // for message pagination
     this.msgOffset = 0;
     this.msgLimit = 20;
@@ -45,30 +45,17 @@ export default class extends AbstractView {
   async init() {
     const showError = document.getElementById("showError");
     const chatUsers = document?.querySelector(".chat-users");
-
-    // WebSocket Event Handlers
-    this.ws.onopen = () => {
-      console.log("Connected to WebSocket server");
-    };
-
-    // Send a message to the server to get the user
-    this.ws.send(JSON.stringify({
-      action: "get_user"
-    }));
-
-    // Send a message to the server to get the contacts
-    this.ws.send(JSON.stringify({
-      action: "get_contacts",
-      offset: this.cntOffset,
-      limit: this.cntLimit
-    }));
+    Ws.init();
+    this.ws = Ws.getWs();
+    // get contacts
+    this.contacts = await this.loadContacts();
     // Handle incoming WebSocket messages
     this.ws.onmessage = (event) => {
       this.handleMessage(event, chatUsers, showError);
     };
 
     // initialize the contacter and load the messages
-    this.loadContacts();
+
     this.removeMessagesBtn();
     // Error handling for WebSocket connection
     this.ws.onclose = (event) => this.handleClose(event, showError);
@@ -120,6 +107,8 @@ export default class extends AbstractView {
     this.sendMessage(showError);
     this.sendTyping();
   }
+
+
 
 
 
@@ -224,6 +213,7 @@ export default class extends AbstractView {
     if (this.contacts.length > 0) {
       this.contacts.forEach(contact => {
         if (contact.id !== this.sender.id) {
+          console.log(contact);
           const contactElement = document.createElement("div");
           contactElement.className = "chat-user";
           // add class based on status online/offline
@@ -320,7 +310,7 @@ export default class extends AbstractView {
     }
   }
 
-  loadContacts() {
+  async loadContacts() {
     const chatUsers = document.querySelector(".chat-users");
     chatUsers.innerHTML = "";
     this.ws.send(JSON.stringify({

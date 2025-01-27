@@ -60,6 +60,9 @@ func (m *Manager) Broadcast(message entity.Contact) {
 	m.Mtx.RLock()
 	defer m.Mtx.RUnlock()
 	for _, conn := range m.Client {
+		if (m.Client[message.ID] == conn) {
+			continue
+		}
 		err := conn.WriteJSON(message)
 		if err != nil {
 			log.Printf("error writing to client: %v", err)
@@ -71,6 +74,9 @@ func (m *Manager) WriteToClient(ctx context.Context, Message entity.Message) err
 	conn := m.GetClient(Message.ReceiverID)
 	if conn == nil {
 		return fmt.Errorf("client %d not found", Message.ReceiverID)
+	}
+	if (Message.ReceiverID == Message.SenderID) {
+		return fmt.Errorf("client %d cannot send message to self", Message.ReceiverID	)
 	}
 	m.Mtx.Lock()
 	defer m.Mtx.Unlock()

@@ -10,6 +10,7 @@ import SideBar from "./views/SideBarView.js";
 import Utils from "./pkg/Utils.js";
 import fetcher from "./pkg/fetcher.js";
 import Chat from "./views/chatView.js";
+import ws from "./pkg/ws.js"
 
 const pathToRegex = (path) =>
   new RegExp("^" + path.replace(/\//g, "\\/").replace(/:\w+/g, "(.+)") + "$");
@@ -71,7 +72,7 @@ const router = async () => {
   let match = potentialMatches.find(
     (potentialMatches) => potentialMatches.result !== null
   );
-  
+
   if (!match) {
     Utils.showError(404, "The page you requested does not exist");
     return;
@@ -98,7 +99,7 @@ const router = async () => {
     window.location.href = "/sign-in";
     return;
   }
-
+  ws.init();
   if (
     match.route.view === Home ||
     match.route.view === Post ||

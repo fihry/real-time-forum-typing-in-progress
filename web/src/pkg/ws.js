@@ -1,30 +1,28 @@
 class WebSocketService {
-  constructor() {
-    this.ws = null;
-    this.isInitialized = false;
-  }
+  static ws = null;
+  static isInitialized = false;
+
 
   init() {
-    if (this.isInitialized) return;
-    this.ws = new WebSocket(`ws://${window.location.host}/api/ws/chat`);
-    this.ws.onopen = () => {
+    if (WebSocketService.isInitialized) return;
+    WebSocketService.ws = new WebSocket(`ws://${window.location.host}/api/ws/chat`);
+    WebSocketService.ws.onopen = () => {
       console.log(`welcome to the real_time_forum`);
-      this.ws.send(JSON.stringify({
+      WebSocketService.ws.send(JSON.stringify({
         action: "get_user"
       }));
     };
-    this.notify();
 
-    this.ws.onclose = () => {
+    WebSocketService.ws.onclose = () => {
       console.log("WebSocket closed");
     };
 
-    this.isInitialized = true;
+    WebSocketService.isInitialized = true;
   }
 
   notify() {
     let n = 1;
-    this.ws.onmessage = (event) => {
+    WebSocketService.ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
       switch (data.action) {
         case "new_message":
@@ -50,16 +48,17 @@ class WebSocketService {
   }
 
   getWs() {
-    return this.ws;
+    return WebSocketService.ws;
   }
 
+
   close() {
-    this.ws.close();
-    this.isInitialized = false;
+    WebSocketService.ws.close();
+    WebSocketService.isInitialized = false;
   }
 
   isReady() {
-    return this.ws && this.ws.readyState === WebSocket.OPEN;
+    return WebSocketService.ws && WebSocketService.ws.readyState === WebSocket.OPEN;
   }
 }
 

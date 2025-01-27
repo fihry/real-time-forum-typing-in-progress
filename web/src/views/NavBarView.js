@@ -1,20 +1,20 @@
 import AbstractView from "./AbstractView.js";
 import Utils from "../pkg/Utils.js";
 import fetcher from "../pkg/fetcher.js";
-import Ws from "./chatView.js";
+import Ws from "../pkg/ws.js";
 import redirect from "../index.js";
 
 export default class extends AbstractView {
   constructor(params, user) {
     super(params);
     this.user = user;
-    this.ws = Ws;
+    this.ws = Ws.getWs();
   }
 
   async getHtml() {
     const isAuthorized = await fetcher.isLoggedIn();
     return `
-        <div class="logo" id="logo">Forum App</div>
+       <a id="logo" data-link href="/">Real Time Forum</a>
         <div id="nav-auth-links" class="${isAuthorized ? "hidden" : ""}">
             <button id="login-btn" class="btn login">Login</button>
             <button id="register-btn" class="btn register">Register</button>
@@ -69,18 +69,20 @@ export default class extends AbstractView {
       console.log('WebSocket connection established');
     };
     let n = 1;
-    this.ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      if (data.action === "new_message") {
-        const messagesBtn = document.querySelector("#messages-btn");
-        messagesBtn.classList.add("notification");
-        // give this badge a number
-        messagesBtn.innerHTML = `messages <span id='badge'>${n++}</span>`;
-        messagesBtn.addEventListener("click", () => {
-          messagesBtn.classList.remove("notification");
-        });
-      }
-    };
+    const messagesBtn = document.querySelector("#messages-btn");
+    if (messagesBtn) {
+      this.ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        if (data.action === "new_message") {
+          messagesBtn.classList.add("notification");
+          // give this badge a number
+          messagesBtn.innerHTML = `messages <span id='badge'>${n++}</span>`;
+          messagesBtn.addEventListener("click", () => {
+            messagesBtn.classList.remove("notification");
+          });
+        }
+      };
+    }
 
     this.ws.onerror = (event) => {
       console.error("WebSocket error:", event);

@@ -55,7 +55,10 @@ func (s *MessageService) Websocket(conn *websocket.Conn, ctx context.Context, se
 	}
   // Update user status to online
 	user.Status = "online"
-	user.Action = "get_user"
+	user.Action = "change_status"
+	s.Manager.Broadcast(user)
+
+	
 
 	// Start the loop to read messages
 	defer conn.Close()
@@ -116,7 +119,7 @@ func messagessHandller( s *MessageService, conn *websocket.Conn, ctx context.Con
 			log.Printf("Sent user info to client: %v", user)
 		case "get_contacts":
 			// Fetch and send contacts
-			contactsOrder,status, err := getContacts(ctx, s, user.ID, conn, &messageInfo)
+			contactsOrder,status, err := getContacts(ctx, s, user.ID)
 			if err != nil || status != http.StatusOK {
 				return fmt.Errorf("error occurred while getting contacts: %v", err)
 			}
@@ -124,21 +127,6 @@ func messagessHandller( s *MessageService, conn *websocket.Conn, ctx context.Con
         log.Printf("Error sending contacts to client: %v", err)
         return fmt.Errorf("error occurred while sending contacts: %v", err)
       }
-		case "contacter_writting":
-			// Notify the receiver (if online)
-			contact ,_, err := s.GetUserByID(ctx, uint(messageInfo.ReceiverID))
-			if err != nil {
-				log.Printf("Error getting user: %v", err)
-			}
-			messageInfo.Nickname = contact.Nickname
-			messageInfo.Action = "contacter_writting"
-			log.Printf("contacter_writting: %v", messageInfo)
-			// Write the message to the receiver
-			go func() {
-				if err := s.Manager.WriteToClient(ctx, messageInfo); err != nil {
-					log.Printf("Error writing message to client: %v", err)
-				}
-			}()
 		case "new_message":
 			// check message are not empty
 			if messageInfo.Message == "" {
@@ -152,14 +140,14 @@ func messagessHandller( s *MessageService, conn *websocket.Conn, ctx context.Con
 				return fmt.Errorf("error occurred while creating message: %v", err)
 			}
 
-			// Notify the receiver (if online)
+			// Notify the receiver (if online) and 
 			contact ,_, err := s.GetUserByID(ctx, uint(messageInfo.SenderID))
 			if err != nil {
 				log.Printf("Error getting user: %v", err)
 				return fmt.Errorf("error occurred while getting user: %v", err)
 			}
 			messageInfo.Nickname = contact.Nickname
-			messageInfo.Action = "new_message"
+
 			log.Printf("Sending message to receiver: %v", messageInfo)
 			// Write the message to the receiver
 			go func() {
@@ -173,7 +161,7 @@ func messagessHandller( s *MessageService, conn *websocket.Conn, ctx context.Con
 	}
 }
 
-func getContacts(ctx context.Context, s *MessageService, id uint, conn *websocket.Conn, messageInfo *entity.Message) (entity.ConstacsOrder,int, error) {
+func getContacts(ctx context.Context, s *MessageService, id uint) (entity.ConstacsOrder,int, error) {
 	// Retrieve contacts that have had recent communication
 	contacts, status, err := s.GetAllContacts(ctx, uint(id))
 	if err != nil || status != http.StatusOK {
@@ -181,7 +169,12 @@ func getContacts(ctx context.Context, s *MessageService, id uint, conn *websocke
 	}
 	
 	// Add online/offline status for each contact
-	for i, contact := range contacts {
+	for i:= 0; i< len(contacts); i++ {
+		contact:= contacts[i]
+		if (contact.ID == id) {
+			contacts= append(contacts[:i], contacts[i+1:]...)
+			continue
+		}
 		s.Manager.Mtx.RLock()
 		online := s.Manager.GetClient(contact.ID) != nil
 		s.Manager.Mtx.RUnlock()
