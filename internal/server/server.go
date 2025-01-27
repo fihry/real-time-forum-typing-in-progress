@@ -14,10 +14,10 @@ type Server struct {
 func (s *Server) Run(c *config.API, handler http.Handler) error {
 	// Prepare server
 	s.httpServer = &http.Server{
-		Addr:    c.Host + ":" + c.Port,
+		Addr: ":" + c.Port,
 		Handler: handler,
 	}
 	// Start listening server
-	log.Printf("\033[32mServer is running...🚀\nLink: 🌐 http://%s", s.httpServer.Addr)
+	log.Printf("\033[32mServer is running...🚀\nLink: 🌐 http://%s:%s", c.Host, c.Port)
 	return s.httpServer.ListenAndServe()
 }

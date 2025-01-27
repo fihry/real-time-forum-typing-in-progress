@@ -1,7 +1,8 @@
 import AbstractView from "./AbstractView.js";
 import Utils from "../pkg/Utils.js";
 import fetcher from "../pkg/fetcher.js";
-import Ws from "../views/chatView.js";
+import Ws from "./chatView.js";
+import redirect from "../index.js";
 
 export default class extends AbstractView {
   constructor(params, user) {
@@ -37,48 +38,52 @@ export default class extends AbstractView {
     });
 
     if (isAuthorized) {
-      // User-specific buttons
-      document.getElementById("create-post-btn")?.addEventListener("click", () => {
-        window.location.href = "/create-post";
-      });
-      document.getElementById("messages-btn")?.addEventListener("click", () => {
-        window.location.href = "/chat";
-      });
-
-      document.getElementById("logout-btn")?.addEventListener("click", () => {
-        Utils.logOut();
-      });
-    } else {
-      // Login/Register buttons
-      document.getElementById("login-btn")?.addEventListener("click", () => {
-        window.location.href = "/sign-in";
-      });
-
-      document.getElementById("register-btn")?.addEventListener("click", () => {
-        window.location.href = "/sign-up";
-      });
+      let btns = document.querySelectorAll(".btn");
+      btns.forEach((btn) => {
+        btn.addEventListener("click", (e) => {
+          switch (e.target.id) {
+            case "create-post-btn":
+              redirect.navigateTo("/create-post");
+              break;
+            case "messages-btn":
+              redirect.navigateTo("/chat");
+              break;
+            case "logout-btn":
+              Utils.logOut();
+              break;
+            case "login-btn":
+              redirect.navigateTo("/sign-in");
+              break;
+            case "register-btn":
+              redirect.navigateTo("/sign-up");
+              break;
+            default:
+              break;
+          }
+        });
+      })
     }
     // WebSocket connection for chat notifications
-     this.ws.onopen = () => {
-        alert("WebSocket connection established");
-        console.log('WebSocket connection established');
-      };
-      let n = 1;
-      this.ws.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        if (data.action === "new_message") {
-          const messagesBtn = document.querySelector("#messages-btn");
-          messagesBtn.classList.add("notification");
-          // give this badge a number
-          messagesBtn.innerHTML = `messages <span id='badge'>${n++}</span>`;
-          messagesBtn.addEventListener("click", () => {
-            messagesBtn.classList.remove("notification");
-          });
-        }
-      };
+    this.ws.onopen = () => {
+      alert("WebSocket connection established");
+      console.log('WebSocket connection established');
+    };
+    let n = 1;
+    this.ws.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      if (data.action === "new_message") {
+        const messagesBtn = document.querySelector("#messages-btn");
+        messagesBtn.classList.add("notification");
+        // give this badge a number
+        messagesBtn.innerHTML = `messages <span id='badge'>${n++}</span>`;
+        messagesBtn.addEventListener("click", () => {
+          messagesBtn.classList.remove("notification");
+        });
+      }
+    };
 
-      this.ws.onerror = (event) => {
-        console.error("WebSocket error:", event);
-      };
+    this.ws.onerror = (event) => {
+      console.error("WebSocket error:", event);
+    };
   }
 }

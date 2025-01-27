@@ -30,7 +30,7 @@ func NewHandler(service *service.Service, secret string) *Handler {
 	return &Handler{
 		service:     service,
 		secret:      secret,
-		RateLimiter: NewRateLimiter(60, time.Minute),
+		RateLimiter: NewRateLimiter(600, time.Minute),
 	}
 }
 
