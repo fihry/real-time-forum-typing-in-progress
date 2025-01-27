@@ -327,6 +327,21 @@ body {
   background-color: var(--color-scrollbar);
 }
 
+.writing {
+  width: max-content;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+}
+
+.writing span {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background-color: rgb(136, 136, 136);
+  animation: writing 1s infinite;
+}
 
 .error {
   width: 100%;
@@ -416,5 +431,18 @@ body {
 
   to {
     transform: translateX(0);
+  }
+}
+@keyframes writing {
+  0% {
+    opacity: 0;
+  }
+
+  50% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
   }
 }

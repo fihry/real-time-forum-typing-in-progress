@@ -124,6 +124,21 @@ func messagessHandller( s *MessageService, conn *websocket.Conn, ctx context.Con
         log.Printf("Error sending contacts to client: %v", err)
         return fmt.Errorf("error occurred while sending contacts: %v", err)
       }
+		case "contacter_writting":
+			// Notify the receiver (if online)
+			contact ,_, err := s.GetUserByID(ctx, uint(messageInfo.ReceiverID))
+			if err != nil {
+				log.Printf("Error getting user: %v", err)
+			}
+			messageInfo.Nickname = contact.Nickname
+			messageInfo.Action = "contacter_writting"
+			log.Printf("contacter_writting: %v", messageInfo)
+			// Write the message to the receiver
+			go func() {
+				if err := s.Manager.WriteToClient(ctx, messageInfo); err != nil {
+					log.Printf("Error writing message to client: %v", err)
+				}
+			}()
 		case "new_message":
 			// check message are not empty
 			if messageInfo.Message == "" {
@@ -138,7 +153,7 @@ func messagessHandller( s *MessageService, conn *websocket.Conn, ctx context.Con
 			}
 
 			// Notify the receiver (if online)
-			contact ,_, err := s.GetUserByID(ctx, uint(messageInfo.ReceiverID))
+			contact ,_, err := s.GetUserByID(ctx, uint(messageInfo.SenderID))
 			if err != nil {
 				log.Printf("Error getting user: %v", err)
 				return fmt.Errorf("error occurred while getting user: %v", err)

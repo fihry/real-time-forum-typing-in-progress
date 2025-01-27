@@ -61,7 +61,6 @@ export default class extends AbstractView {
       offset: this.cntOffset,
       limit: this.cntLimit
     }));
-
     // Handle incoming WebSocket messages
     this.ws.onmessage = (event) => {
       this.handleMessage(event, chatUsers, showError);
@@ -112,10 +111,13 @@ export default class extends AbstractView {
         case "get_messages":
           this.msgStatus = data.status;
           this.displayMessages(showError, data);
+        case "contacter_writting":
+          this.ContacterWritting(data);
           break;
       }
     }
     this.sendMessage(showError);
+    this.sendTyping();
   }
 
 
@@ -241,10 +243,12 @@ export default class extends AbstractView {
     // create notification element and apeend it to the messages div
     const notification = document.createElement("div");
     notification.className = "notify";
+    console.log(this.sender);
+    console.log(data);
     notification.innerHTML = `
       <div class="notify-sender-info">
-      <div class="notify-sender-avatar">${sender.nickname.slice(0, 1).toUpperCase()}</div>
-      <div class="notify-sender-name">${sender.nickname}</div>
+      <div class="notify-sender-avatar">${data.nickname.slice(0, 1).toUpperCase()}</div>
+      <div class="notify-sender-name">${data.nickname}</div>
       </div>
       <div class="notify-content">
       <p>${data.message.length > 12 ? `${data.message.slice(0, 12)}...` : data.message}</p>
@@ -264,6 +268,30 @@ export default class extends AbstractView {
     // play raciving message sound
     const audio = new Audio("/src/assets/audio/receiving.mp3");
     audio.play();
+  }
+
+  //  this add some writing svg to the chat that told the user that the contacter is writing
+  ContacterWritting(data) {
+    const writing = document.createElement("div");
+    writing.className = "writing";
+    writing.innerHTML = `
+      <div class="writing">
+      <span class="item1"></span>
+      <span class="item2"></span>
+      <span class="item3"></span>
+      </div>
+    `;
+    const chat_users = document.querySelectorAll(".chat-user");
+    console.log(data.nickname);
+    chat_users.forEach(chat_user => {
+      if (chat_user.querySelector(".user-nickname").textContent === data.nickname) {
+        chat_user.appendChild(writing);
+      }
+    });
+
+    setTimeout(() => {
+      writing.remove();
+    }, 3000);
   }
 
   // Select a contact and load their messages
@@ -343,15 +371,16 @@ export default class extends AbstractView {
     chatForm.addEventListener("submit", (event) => {
       event.preventDefault();
       const messageInput = document.getElementById("message");
-      const message = messageInput.value;
+      const message = messageInput.value.trim();
       if (message && message.length > 0) {
         this.ws.send(JSON.stringify({
           action: "new_message",
           receiver_id: this.contacter.id,
+          sender_id: this.sender.id,
           message: message
         }));
         this.displayMessage({
-          receiver_id: this.contacter.id,
+          receiver_id: this.sender.id,
           message: message
         });
         // play sending message sound
@@ -366,11 +395,30 @@ export default class extends AbstractView {
     });
   }
 
+  // //this function send the message to the server that the contacter is writing
+  sendTyping() {
+    const messageInput = document.getElementById("message");
+    messageInput.oninput = () => {
+      let isTyping = true;
+      setInterval(() => {
+        if (isTyping) {
+          this.ws.send(JSON.stringify({
+            action: "contacter_writting",
+            receiver_id: this.contacter.id
+          }));
+        }
+        isTyping = false;
+      }, 500);
+    };
+  }
+
   // this function get the contacterId frome the location path 
   getContacter() {
+
     const path = window.location.pathname;
     const id = path.split("/")[2];
     this.contacter = this.contacts.find(contact => contact.id == id);
+    this.displayMessages();
   }
 
   // Add active class to the selected contact in the sidebar
