@@ -111,9 +111,10 @@ const router = async () => {
     const NavBarView = new NavBar(null, user);
     document.querySelector("#navbar").innerHTML = await NavBarView.getHtml();
     NavBarView.init();
-
+    view.addStyle("global");
     view.addStyle("navbar");
     view.addStyle("main-content");
+    view.addStyle("sidebar");
     view.addStyle("post-card");
 
     let sideBarHtml = "";
@@ -121,14 +122,13 @@ const router = async () => {
     let contactsBarHtml = "";
     let contactsBarView;
     if (match.route.view === Home) {
-      view.addStyle("sidebar");
-
       SideBarView = new SideBar(null, user);
       sideBarHtml = await SideBarView.getHtml();
+    }
+    if (match.route.view !== Chat) {
       contactsBarView = new ContactsBarView();
       contactsBarHtml = await contactsBarView.getHtml();
     }
-
     document.querySelector("#app").innerHTML =
       sideBarHtml + (await view.getHtml()) + contactsBarHtml;
     SideBarView?.init();

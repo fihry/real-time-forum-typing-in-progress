@@ -40,7 +40,7 @@
   border: 1px solid #ffffff;
   color: #ffffff;
 }
-.navbar .btn .badge {
+.notification #badge {
   position: absolute;
   width: 20px;
     height: 20px;

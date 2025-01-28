@@ -84,6 +84,5 @@ export default class extends AbstractView {
         }
       });
     }
-    this.addActiveClass();
   }
 }

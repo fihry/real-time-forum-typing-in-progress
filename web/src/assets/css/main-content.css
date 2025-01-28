@@ -1,14 +1,6 @@
-.main-content {
-  width: 100%;
-  height: calc(100vh - 71px);
-  max-height: 100%;
-  display: flex;
-  overflow: hidden;
-}
-
 .posts-box{
   height: 100%;
-  width: calc(100% - 500px);
+  width: calc(100% - 530px);
   overflow: hidden;
 }
 

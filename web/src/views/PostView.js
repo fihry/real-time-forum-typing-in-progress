@@ -237,6 +237,7 @@ export default class extends AbstractView {
     return `
     
             <div class="post-container">
+            <div class="post-box">
                 <div class="post-details">
                     <h3 id="post-title"></h3>
                     <div id="post-user">
@@ -294,6 +295,8 @@ export default class extends AbstractView {
             <div id="comments" class="comments-container">
                 <!-- Comments will be dynamically populated here -->
             </div>
+        </div>
+        </div>
         `;
   }
 
