@@ -152,10 +152,9 @@ func getContacts(ctx context.Context, s *MessageService, id uint) (entity.Consta
 	if err != nil || status != http.StatusOK {
 		return entity.ConstacsOrder{}, http.StatusInternalServerError, err
 	}
-	
 	// Add online/offline status for each contact
 	for i, contact := range contacts {
-		if contact.ID == ctx.Value(s.IDKey).(uint) {
+		if contact.ID == id {
 			continue
 		}
 		s.Manager.Mtx.RLock()
