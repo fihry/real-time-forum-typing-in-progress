@@ -7,6 +7,10 @@ let offset = 0;
 let limit = 20;
 let ended = false;
 
+export function ResetOffset() {
+  offset = 0;
+}
+
 const getPostsByCategory = async (category) => {
   let posts = await fetcher.get(
     `${path}${category}?limit=${limit}&offset=${offset}`
@@ -49,7 +53,7 @@ const newPostElement = (post) => {
   const headerContent = document.createElement("div");
   const authorName = document.createElement("div");
   authorName.classList.add("post-author-name");
-  authorName.textContent = post.nikname;
+  authorName.textContent = post.nickname;
 
   headerContent.appendChild(authorName);
   postCardHeader.appendChild(headerContent);
@@ -408,7 +412,7 @@ async function handleScroll() {
   }, 200);
 }
 
-export default class extends AbstractView {
+export class Home extends AbstractView {
   constructor(params) {
     super(params);
     this.setTitle("Forum");

@@ -1,6 +1,6 @@
 // /home/melfihry/forum/web/src/index.js
 
-import Home from "./views/HomeView.js";
+import {Home, ResetOffset} from "./views/HomeView.js";
 import SignIn from "./views/SignInView.js";
 import SignUp from "./views/SignUpView.js";
 import CreatePost from "./views/CreatePostView.js";
@@ -36,6 +36,7 @@ const getParams = (match) => {
 
 const navigateTo = (url) => {
   history.pushState(null, null, url);
+  ResetOffset()
   router();
 };
 

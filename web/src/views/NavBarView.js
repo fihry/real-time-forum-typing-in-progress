@@ -14,7 +14,7 @@ export default class extends AbstractView {
   async getHtml() {
     const isAuthorized = await fetcher.isLoggedIn();
     return `
-       <a id="logo" data-link href="/">Real Time Forum</a>
+         <a href="/" data-link id="logo">Real Time Forum</a>
         <div id="nav-auth-links" class="${isAuthorized ? "hidden" : ""}">
             <button id="login-btn" class="btn login">Login</button>
             <button id="register-btn" class="btn register">Register</button>
@@ -32,11 +32,6 @@ export default class extends AbstractView {
 
   async init() {
     const isAuthorized = await fetcher.isLoggedIn();
-
-    document.getElementById("logo")?.addEventListener("click", () => {
-      window.location.href = "/";
-    });
-
     if (isAuthorized) {
       let btns = document.querySelectorAll(".btn");
       btns.forEach((btn) => {

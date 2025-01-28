@@ -70,17 +70,17 @@ export default class extends AbstractView {
             </div>
 
             <div class="form-group">
-              <label for="nikname">Nickname</label>
+              <label for="nickname">Nickname</label>
               <input
                 type="text"
-                id="nikname"
+                id="nickname"
                 class="form-control"
                 placeholder="Choose a nickname"
                 required
                 minlength="3"
                 maxlength="20"
               >
-              <div class="validation-message" id="nikname-error"></div>
+              <div class="validation-message" id="nickname-error"></div>
             </div>
 
             <div class="form-group">
@@ -155,7 +155,7 @@ export default class extends AbstractView {
 
     // Input elements
     const emailInput = document.getElementById("email");
-    const niknameInput = document.getElementById("nikname");
+    const nicknameInput = document.getElementById("nickname");
     const passwordInput = document.getElementById("password");
     const rePasswordInput = document.getElementById("rePassword");
     const firstNameInput = document.getElementById("firstName");
@@ -165,7 +165,7 @@ export default class extends AbstractView {
 
     // Error message elements
     const emailError = document.getElementById("email-error");
-    const niknameError = document.getElementById("nikname-error");
+    const nicknameError = document.getElementById("nickname-error");
     const passwordError = document.getElementById("password-error");
     const rePasswordError = document.getElementById("rePassword-error");
     const firstNameError = document.getElementById("firstName-error");
@@ -188,22 +188,22 @@ export default class extends AbstractView {
       return true;
     };
 
-    // nikname validation
-    const validatenikname = (nikname) => {
-      if (!nikname) {
-        niknameError.textContent = "nikname is required";
+    // nickname validation
+    const validatenickname = (nickname) => {
+      if (!nickname) {
+        nicknameError.textContent = "nickname is required";
         return false;
       }
-      if (nikname.length < 3) {
-        niknameError.textContent =
-          "nikname must be at least 3 characters long";
+      if (nickname.length < 3) {
+        nicknameError.textContent =
+          "nickname must be at least 3 characters long";
         return false;
       }
-      if (nikname.length > 20) {
-        niknameError.textContent = "nikname must be less than 20 characters";
+      if (nickname.length > 20) {
+        nicknameError.textContent = "nickname must be less than 20 characters";
         return false;
       }
-      niknameError.textContent = "";
+      nicknameError.textContent = "";
       return true;
     };
 
@@ -282,8 +282,8 @@ export default class extends AbstractView {
 
     // Real-time validation
     emailInput.addEventListener("input", () => validateEmail(emailInput.value));
-    niknameInput.addEventListener("input", () =>
-      validatenikname(niknameInput.value)
+    nicknameInput.addEventListener("input", () =>
+      validatenickname(nicknameInput.value)
     );
     passwordInput.addEventListener("input", () =>
       validatePassword(passwordInput.value)
@@ -306,7 +306,7 @@ export default class extends AbstractView {
 
       // Validate all fields
       const isEmailValid = validateEmail(emailInput.value);
-      const isniknameValid = validatenikname(niknameInput.value);
+      const isnicknameValid = validatenickname(nicknameInput.value);
       const isPasswordValid = validatePassword(passwordInput.value);
       const isConfirmPasswordValid = validateConfirmPassword(
         passwordInput.value,
@@ -320,7 +320,7 @@ export default class extends AbstractView {
       // Only proceed if all validations pass
       if (
         isEmailValid &&
-        isniknameValid &&
+        isnicknameValid &&
         isPasswordValid &&
         isConfirmPasswordValid &&
         isFirstNameValid &&
@@ -330,7 +330,7 @@ export default class extends AbstractView {
       ) {
         await signup(
           emailInput.value,
-          niknameInput.value,
+          nicknameInput.value,
           passwordInput.value,
           firstNameInput.value,
           lastNameInput.value,

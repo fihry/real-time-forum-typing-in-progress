@@ -10,6 +10,7 @@ let dislikeListenerSet = false; // Flag to track dislike button listener
 
 const getPost = async (postID) => {
   const post = await fetcher.get(getPostPath + postID);
+  console.log(post);
   if (post && post.msg != undefined) {
     Utils.showError(post.status, post.msg);
     return;
@@ -17,7 +18,7 @@ const getPost = async (postID) => {
   if (post) {
     document.getElementById("post-title").innerText = post.title;
     const userEl = document.getElementById("post-user-id");
-    userEl.innerText = "Author: " + post.nikname;
+    userEl.innerText = "Author: " + post.nickname;
 
     const formattedCategories = post?.categories?.map((cat) => " #" + cat);
     document.getElementById("post-tags").innerText =
@@ -107,7 +108,7 @@ const drawComments = (comment) => {
 
   const authorEl = document.createElement("p");
   authorEl.classList.add("card-header");
-  authorEl.innerText = "Author: " + comment.nikname;
+  authorEl.innerText = "Author: " + comment.nickname;
 
   const body = document.createElement("div");
   body.classList.add("card-body");
