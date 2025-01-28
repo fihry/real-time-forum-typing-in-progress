@@ -152,7 +152,6 @@ func getContacts(ctx context.Context, s *MessageService, id uint) (entity.Consta
 	if err != nil || status != http.StatusOK {
 		return entity.ConstacsOrder{}, http.StatusInternalServerError, err
 	}
-	
 	// Add online/offline status for each contact
 	for i, contact := range contacts {
 // ignore the user itself

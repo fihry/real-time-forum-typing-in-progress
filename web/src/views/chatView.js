@@ -46,10 +46,9 @@ export default class extends AbstractView {
     const showError = document.getElementById("showError");
     const chatUsers = document?.querySelector(".chat-users");
     // Initialize WebSocket connection
-    if (this.ws.readyState !== WebSocket.OPEN) {
-      Ws.init();
-      this.ws = Ws.getWs();
-    }
+
+    Ws.init();
+    this.ws = Ws.getWs();
     // get contacts
     this.ws.send(JSON.stringify({
       action: "get_contacts",
