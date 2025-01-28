@@ -10,6 +10,7 @@ import (
 type User interface {
 	Create(ctx context.Context, user entity.User) (int, error)
 	GetUserIDByEmail(ctx context.Context, email string) (entity.User, int, error)
+	GetUserByNickName(ctx context.Context, nickname string) (entity.User, int, error)
 	GetUserByID(ctx context.Context, id uint) (entity.Contact, int, error)
 }
 

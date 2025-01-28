@@ -58,3 +58,19 @@ func (r *UserRepository) GetUserIDByEmail(ctx context.Context, email string) (en
 	}
 	return user, http.StatusOK, nil
 }
+
+
+func (r *UserRepository) GetUserByNickName(ctx context.Context, nickname string) (entity.User, int, error) {
+	query := `SELECT id, hashPass FROM users WHERE nickname = $1 LIMIT 1;`
+	prep, err := r.db.PrepareContext(ctx, query)
+	user := entity.User{}
+	if err != nil {
+		return user, http.StatusInternalServerError, err
+	}
+	defer prep.Close()
+
+	if err = prep.QueryRowContext(ctx, nickname).Scan(&user.ID, &user.Password); err != nil {
+		return user, http.StatusBadRequest, err
+	}
+	return user, http.StatusOK, nil
+}
