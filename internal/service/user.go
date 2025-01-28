@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"errors"
-	"fmt"
 	"net/http"
 
 	"forum/internal/entity"
@@ -48,20 +47,15 @@ func (s *UserService) SignIn(ctx context.Context, user entity.User) (string, int
 		return "", http.StatusBadRequest, errors.New("invalid credentials")
 	}
 
-	if err:= utils.IsValidEmail(&user); err != nil {
+	if err := utils.IsValidEmail(&user); err != nil {
 		user.Nickname = user.Email
 		user.Email = ""
 	}
 
-	switch {
-	case user.Email != "":
-		fmt.Println("email")
+	if user.Email != "" {
 		return s.signInByEmail(ctx, user)
-	case user.Nickname != "":
-		return s.signInByNickname(ctx, user)
-	default:
-		return "", http.StatusBadRequest, errors.New("invalid email or nickname")
 	}
+	return s.signInByNickname(ctx, user)
 }
 
 func (s *UserService) signInByEmail(ctx context.Context, user entity.User) (string, int, error) {
