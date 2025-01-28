@@ -5,7 +5,10 @@ class WebSocketService {
 
   init() {
     if (WebSocketService.isInitialized) return;
+    console.log("Initializing WebSocket");
     WebSocketService.ws = new WebSocket(`ws://${window.location.host}/api/ws/chat`);
+    WebSocketService.isInitialized = true;
+    console.log("WebSocket initialized", WebSocketService.ws);
     WebSocketService.ws.onopen = () => {
       console.log(`welcome to the real_time_forum`);
       WebSocketService.ws.send(JSON.stringify({
@@ -13,11 +16,12 @@ class WebSocketService {
       }));
     };
 
+
     WebSocketService.ws.onclose = () => {
+      WebSocketService.isInitialized = false;
       console.log("WebSocket closed");
     };
 
-    WebSocketService.isInitialized = true;
   }
 
   notify() {
