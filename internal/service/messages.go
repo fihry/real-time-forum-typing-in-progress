@@ -116,7 +116,7 @@ func messagessHandller( s *MessageService, conn *websocket.Conn, ctx context.Con
 			log.Printf("Sent user info to client: %v", user)
 		case "get_contacts":
 			// Fetch and send contacts
-			contactsOrder,status, err := getContacts(ctx, s, user.ID, conn, &messageInfo)
+			contactsOrder,status, err := getContacts(ctx, s, user.ID)
 			if err != nil || status != http.StatusOK {
 				return fmt.Errorf("error occurred while getting contacts: %v", err)
 			}
@@ -158,7 +158,7 @@ func messagessHandller( s *MessageService, conn *websocket.Conn, ctx context.Con
 	}
 }
 
-func getContacts(ctx context.Context, s *MessageService, id uint, conn *websocket.Conn, messageInfo *entity.Message) (entity.ConstacsOrder,int, error) {
+func getContacts(ctx context.Context, s *MessageService, id uint) (entity.ConstacsOrder,int, error) {
 	// Retrieve contacts that have had recent communication
 	contacts, status, err := s.GetAllContacts(ctx, uint(id))
 	if err != nil || status != http.StatusOK {
@@ -167,6 +167,9 @@ func getContacts(ctx context.Context, s *MessageService, id uint, conn *websocke
 	
 	// Add online/offline status for each contact
 	for i, contact := range contacts {
+		if contact.ID == ctx.Value(s.IDKey).(uint) {
+			continue
+		}
 		s.Manager.Mtx.RLock()
 		online := s.Manager.GetClient(contact.ID) != nil
 		s.Manager.Mtx.RUnlock()
