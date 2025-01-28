@@ -99,13 +99,12 @@ export default class extends AbstractView {
         case "get_messages":
           this.msgStatus = data.status;
           this.displayMessages(showError, data);
-        case "contacter_writting":
-          this.ContacterWritting(data);
+          break;
+        default:
           break;
       }
     }
     this.sendMessage(showError);
-    this.sendTyping();
   }
 
 
@@ -260,29 +259,6 @@ export default class extends AbstractView {
     audio.play();
   }
 
-  //  this add some writing svg to the chat that told the user that the contacter is writing
-  ContacterWritting(data) {
-    const writing = document.createElement("div");
-    writing.className = "writing";
-    writing.innerHTML = `
-      <div class="writing">
-      <span class="item1"></span>
-      <span class="item2"></span>
-      <span class="item3"></span>
-      </div>
-    `;
-    const chat_users = document.querySelectorAll(".chat-user");
-    chat_users.forEach(chat_user => {
-      if (chat_user.querySelector(".user-nickname").textContent === data.nickname) {
-        chat_user.appendChild(writing);
-      }
-    });
-
-    setTimeout(() => {
-      writing.remove();
-    }, 3000);
-  }
-
   // Select a contact and load their messages
   selectContact(contact) {
     // clear the chat messages
@@ -382,23 +358,6 @@ export default class extends AbstractView {
         showError.textContent = "Message cannot be empty.";
       }
     });
-  }
-
-  // //this function send the message to the server that the contacter is writing
-  sendTyping() {
-    const messageInput = document.getElementById("message");
-    messageInput.oninput = () => {
-      let isTyping = true;
-      setInterval(() => {
-        if (isTyping) {
-          this.ws.send(JSON.stringify({
-            action: "contacter_writting",
-            receiver_id: this.contacter.id
-          }));
-        }
-        isTyping = false;
-      }, 500);
-    };
   }
 
   // this function get the contacterId frome the location path 
