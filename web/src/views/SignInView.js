@@ -97,16 +97,6 @@ export default class extends AbstractView {
     const passwordInput = document.getElementById("password");
     let showErr = document.getElementById("showError");
 
-    emailInput.addEventListener("input", () => {
-      // Basic email validation
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(emailInput.value)) {
-        showErr.innerHTML = "Please enter a valid email address";
-      } else {
-        showErr.innerHTML = "";
-      }
-    });
-
     passwordInput.addEventListener("input", () => {
       // Basic password validation
       if (passwordInput.value.length < 8) {
