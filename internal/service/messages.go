@@ -167,7 +167,8 @@ func getContacts(ctx context.Context, s *MessageService, id uint) (entity.Consta
 	
 	// Add online/offline status for each contact
 	for i, contact := range contacts {
-		if contact.ID == ctx.Value(s.IDKey).(uint) {
+// ignore the user itself
+		if contact.ID == id {
 			continue
 		}
 		s.Manager.Mtx.RLock()
