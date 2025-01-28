@@ -23,18 +23,6 @@ func newMessageService(messageRepo *repository.Repository) *MessageService {
 	return &MessageService{Repository: messageRepo, Manager: ws.NewManager()}
 }
 
-func (s *MessageService) GetAllContacts(ctx context.Context, userID uint) ([]entity.Contact, int, error) {
-	return s.Repository.Message.GetAllContacts(ctx, userID)
-}
-
-func (s *MessageService) CreateMessage(ctx context.Context, input entity.Message) (int, error) {
-	return s.Repository.Message.CreateMessage(ctx, input)
-}
-
-func (s *MessageService) GetMessagesBySenderIDAndReceiverID(ctx context.Context, senderID, receiverID uint, limit, offset int) ([]entity.Message, int, error) {
-	return s.Repository.Message.GetMessagesBySenderIDAndReceiverID(ctx, senderID, receiverID, limit, offset)
-}
-
 func (s *MessageService) Websocket(conn *websocket.Conn, ctx context.Context, secret string) error {
 	// Retrieve token from context
 	id, ok := ctx.Value(s.IDKey).(int)
