@@ -13,7 +13,7 @@ export default class extends AbstractView {
     this.ws = {};
     // for message pagination
     this.msgOffset = 0;
-    this.msgLimit = 20;
+    this.msgLimit = 10;
     this.msgStatus = "";
     this.cntOffset = 0;
     this.cntLimit = 100;
@@ -49,6 +49,9 @@ export default class extends AbstractView {
 
     Ws.init();
     this.ws = Ws.getWs();
+    this.ws.send(JSON.stringify({
+      action: "get_user",
+    }));
     // get contacts
     this.ws.send(JSON.stringify({
       action: "get_contacts",
@@ -110,10 +113,6 @@ export default class extends AbstractView {
     }
     this.sendMessage(showError);
   }
-
-
-
-
 
 
   // Load messages for the selected contact
@@ -224,7 +223,7 @@ export default class extends AbstractView {
           const initials = contact.nickname.slice(0, 1).toUpperCase() + contact.nickname.slice(1, 2);
           contactElement.innerHTML = `
             <div class="user-avatar">${initials}</div>
-            <div class="user-nickname">${contact.nickname}</div>`;
+            <div class="user-nickname">${contact.nickname.length > 8 ? `${contact.nickname.slice(0, 8)}...` : contact.nickname}</div>`;
           contactElement.addEventListener("click", () => this.selectContact(contact));
           chatUsers.appendChild(contactElement);
         }
@@ -290,15 +289,6 @@ export default class extends AbstractView {
     }
   }
 
-  // async loadContacts() {
-  //   const chatUsers = document.querySelector(".chat-users");
-  //   chatUsers.innerHTML = "";
-  //   if (Ws.isReady()) {
-  //     this.ws.send(JSON.stringify({
-  //       action: "get_contacts",
-  //     }));
-  //   }
-  // }
 
   // change the contact place in the sidebar to the top when a new message is received or sent
   changeContactPlace(contact) {
@@ -312,6 +302,7 @@ export default class extends AbstractView {
 
   // Display a single message (from local input)
   displayMessage(message) {
+    console.log(message);
     const chatMessages = document.getElementById("chat-messages");
     const messageElement = document.createElement("div");
     messageElement.className = `chat-message ${message.sender_id === this.contacter.id ? "chat-user1" : "chat-user2"}`;
@@ -324,7 +315,7 @@ export default class extends AbstractView {
       `;
     const senderElement = document.createElement("div");
     senderElement.className = "message-sender";
-    senderElement.textContent = this.sender.nickname;
+    senderElement.textContent = message.nickname;
     messageElement.prepend(senderElement);
     chatMessages.appendChild(messageElement);
     messageElement.scrollIntoView();
@@ -347,7 +338,8 @@ export default class extends AbstractView {
         }));
         this.displayMessage({
           receiver_id: this.sender.id,
-          message: message
+          message: message,
+          nickname: this.sender.nickname
         });
         // play sending message sound
         const audio = new Audio("/src/assets/audio/sending.mp3");

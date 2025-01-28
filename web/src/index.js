@@ -10,6 +10,7 @@ import SideBar from "./views/SideBarView.js";
 import Utils from "./pkg/Utils.js";
 import fetcher from "./pkg/fetcher.js";
 import Chat from "./views/chatView.js";
+import ContactsBarView from "./views/contactsBarView.js";
 import ws from "./pkg/ws.js"
 
 const pathToRegex = (path) =>
@@ -116,16 +117,21 @@ const router = async () => {
 
     let sideBarHtml = "";
     let SideBarView;
+    let contactsBarHtml = "";
+    let contactsBarView;
     if (match.route.view === Home) {
       view.addStyle("sidebar");
 
       SideBarView = new SideBar(null, user);
       sideBarHtml = await SideBarView.getHtml();
+      contactsBarView = new ContactsBarView();
+      contactsBarHtml = await contactsBarView.getHtml();
     }
 
     document.querySelector("#app").innerHTML =
-      sideBarHtml + (await view.getHtml());
+      sideBarHtml + (await view.getHtml()) + contactsBarHtml;
     SideBarView?.init();
+    contactsBarView?.init();
   } else {
     document.querySelector("#navbar").innerHTML = "";
     document.querySelector("#app").innerHTML = await view.getHtml();
