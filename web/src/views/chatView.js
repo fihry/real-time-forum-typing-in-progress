@@ -45,10 +45,15 @@ export default class extends AbstractView {
   async init() {
     const showError = document.getElementById("showError");
     const chatUsers = document?.querySelector(".chat-users");
-    Ws.init();
-    this.ws = Ws.getWs();
+    // Initialize WebSocket connection
+    if (this.ws.readyState !== WebSocket.OPEN) {
+      Ws.init();
+      this.ws = Ws.getWs();
+    }
     // get contacts
-    this.contacts = await this.loadContacts();
+    this.ws.send(JSON.stringify({
+      action: "get_contacts",
+    }));
     // Handle incoming WebSocket messages
     this.ws.onmessage = (event) => {
       this.handleMessage(event, chatUsers, showError);
@@ -286,18 +291,15 @@ export default class extends AbstractView {
     }
   }
 
-  async loadContacts() {
-    const chatUsers = document.querySelector(".chat-users");
-    chatUsers.innerHTML = "";
-    this.ws.send(JSON.stringify({
-      action: "get_contacts",
-      offset: 0,
-      limit: 100
-    }));
-    if (this.cntStatus === 404) {
-      this.isThrottledContacts = false;
-    }
-  }
+  // async loadContacts() {
+  //   const chatUsers = document.querySelector(".chat-users");
+  //   chatUsers.innerHTML = "";
+  //   if (Ws.isReady()) {
+  //     this.ws.send(JSON.stringify({
+  //       action: "get_contacts",
+  //     }));
+  //   }
+  // }
 
   // change the contact place in the sidebar to the top when a new message is received or sent
   changeContactPlace(contact) {
