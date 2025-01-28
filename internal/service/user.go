@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 
 	"forum/internal/entity"
@@ -43,19 +44,19 @@ func (s *UserService) Create(ctx context.Context, user entity.User) (int, error)
 }
 
 func (s *UserService) SignIn(ctx context.Context, user entity.User) (string, int, error) {
-	if (user.Email == "" && user.Nickname == "") || user.Password == ""{
+	if (user.Email == "" && user.Nickname == "") || user.Password == "" {
 		return "", http.StatusBadRequest, errors.New("you can't enter it empty")
 	}
 
 	switch {
-		case user.Email!= "":
-            return s.signInByEmail(ctx, user)
-        case user.Nickname!= "":
-            return s.signInByNickname(ctx, user)
-        default:
-            return "", http.StatusBadRequest, errors.New("invalid email or nickname")
+	case user.Email != "":
+		fmt.Println("email")
+		return s.signInByEmail(ctx, user)
+	case user.Nickname != "":
+		return s.signInByNickname(ctx, user)
+	default:
+		return "", http.StatusBadRequest, errors.New("invalid email or nickname")
 	}
-
 }
 
 func (s *UserService) signInByEmail(ctx context.Context, user entity.User) (string, int, error) {
@@ -85,12 +86,12 @@ func (s *UserService) signInByEmail(ctx context.Context, user entity.User) (stri
 
 func (s *UserService) signInByNickname(ctx context.Context, user entity.User) (string, int, error) {
 	repoUserStruct, status, err := s.userRepo.GetUserByNickName(ctx, user.Nickname)
-    if err != nil {
-        if status == http.StatusBadRequest {
-            return "", status, errors.New("invalid nickname or password")
-        }
-        return "", status, err
-    }
+	if err != nil {
+		if status == http.StatusBadRequest {
+			return "", status, errors.New("invalid nickname or password")
+		}
+		return "", status, err
+	}
 	if err := utils.CompareHashAndPassword(repoUserStruct.Password, user.Password); err != nil {
 		return "", http.StatusBadRequest, errors.New("invalid password")
 	}

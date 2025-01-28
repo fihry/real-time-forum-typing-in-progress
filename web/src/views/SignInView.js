@@ -3,11 +3,12 @@ import redirect from "../index.js";
 import fetcher from "../pkg/fetcher.js";
 import Utils from "../pkg/Utils.js";
 
+
 const signIn = async (email, password) => {
   let body = {
     email: email,
     password: password,
-  };
+  }; 
 
   const data = await fetcher.post("/api/signin", body);
   if (data && data.msg !== undefined) {
@@ -35,12 +36,12 @@ export default class extends AbstractView {
                     <h2 class="form-title">Sign In</h2>
                     
                     <div class="form-group">
-                        <label for="email">Email Address</label>
+                        <label for="email">Username or Email</label>
                         <input 
-                            type="email" 
+                            type="text"
                             id="email" 
                             class="form-control" 
-                            placeholder="Enter your email" 
+                            placeholder="Enter your username or email"
                             required
                         >
                     </div>
@@ -82,11 +83,11 @@ export default class extends AbstractView {
 
       const email = document.getElementById("email")?.value;
       const password = document.getElementById("password")?.value;
-
+      console.log(email, password);
       // Validate inputs
       if (!email || !password) {
         document.getElementById("showError").innerHTML =
-          "Please enter both email and password";
+          "Please enter both username or email and password";
         return;
       }
 
@@ -98,10 +99,9 @@ export default class extends AbstractView {
     let showErr = document.getElementById("showError");
 
     emailInput.addEventListener("input", () => {
-      // Basic email validation
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(emailInput.value)) {
-        showErr.innerHTML = "Please enter a valid email address";
+      // Basic email or username validation
+      if (emailInput.value.length < 3) {
+        showErr.innerHTML = "Please enter a valid username or email"; 
       } else {
         showErr.innerHTML = "";
       }
