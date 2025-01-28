@@ -44,8 +44,13 @@ func (s *UserService) Create(ctx context.Context, user entity.User) (int, error)
 }
 
 func (s *UserService) SignIn(ctx context.Context, user entity.User) (string, int, error) {
-	if (user.Email == "" && user.Nickname == "") || user.Password == "" {
-		return "", http.StatusBadRequest, errors.New("you can't enter it empty")
+	if user.Email == "" || user.Password == "" {
+		return "", http.StatusBadRequest, errors.New("invalid credentials")
+	}
+
+	if err:= utils.IsValidEmail(&user); err != nil {
+		user.Nickname = user.Email
+		user.Email = ""
 	}
 
 	switch {

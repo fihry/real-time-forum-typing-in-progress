@@ -14,7 +14,7 @@ import (
 
 func IsValidRegister(user *entity.User) error {
 	var err error
-	if err := isValidEmail(user); err != nil {
+	if err := IsValidEmail(user); err != nil {
 		return err
 	} else if err := isValidUser(user); err != nil {
 		return err
@@ -41,7 +41,7 @@ func CompareHashAndPassword(hash, password string) error {
 	return nil
 }
 
-func isValidEmail(user *entity.User) error {
+func IsValidEmail(user *entity.User) error {
 	if _, err := mail.ParseAddress(user.Email); err != nil {
 		return err
 	}
