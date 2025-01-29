@@ -29,7 +29,12 @@ export default class extends AbstractView {
           <div class="chat-users"></div>
         </div>
         <div class="container-chat">
-          <div class="chat-messages" id="chat-messages"></div>
+          <div class="chat-messages" id="chat-messages">
+          <div class="welcome-message">
+          <h1>Welcome to the chat app</h1>
+          <p>Select a contact to start chatting</p>
+          </div>
+          </div>
           <div class="chat-bottom-sideBar">
           <div id="showError" class="error-message"></div>
           <form id="chat-form" class="chat-form">
@@ -45,6 +50,7 @@ export default class extends AbstractView {
   async init() {
     const showError = document.getElementById("showError");
     const chatUsers = document?.querySelector(".chat-users");
+    const chatMessages = document?.querySelector("#chat-messages");
     // Initialize WebSocket connection
 
     Ws.init();
@@ -62,7 +68,6 @@ export default class extends AbstractView {
     };
 
     // initialize the contacter and load the messages
-
     this.removeMessagesBtn();
     // Error handling for WebSocket connection
     this.ws.onclose = (event) => this.handleClose(event, showError);
@@ -88,7 +93,7 @@ export default class extends AbstractView {
           break;
         case "new_message":
           // alert("new message" + data);
-          this.notify(data, this.sender);
+          this.notify(data);
           // change the contact place in the sidebar to the top when a new message is received or sent
           const sender = this.contacts.find(contact => contact.id === data.sender_id);
           this.changeContactPlace(sender);
@@ -117,7 +122,6 @@ export default class extends AbstractView {
 
   // Load messages for the selected contact
   loadMessages() {
-    const chatMessages = document.getElementById("chat-messages");
     if (this.contacter.id) {
       this.ws.send(JSON.stringify({
         action: "get_messages",
@@ -232,7 +236,7 @@ export default class extends AbstractView {
     this.addActiveClass();
   }
 
-  notify(data, sender) {
+  notify(data) {
     // create notification element and apeend it to the messages div
     const notification = document.createElement("div");
     notification.className = "notify";
@@ -264,9 +268,6 @@ export default class extends AbstractView {
 
   // Select a contact and load their messages
   selectContact(contact) {
-    // clear the chat messages
-    const chatMessages = document.getElementById("chat-messages");
-    chatMessages.innerHTML = "";
     history.pushState(null, null, `/chat/${contact.id}`);
     // clean the params
     this.msgOffset = 0;
@@ -274,6 +275,9 @@ export default class extends AbstractView {
     this.contacter = contact;
     this.messages = [];
     this.ended = false;
+    // clear the chat messages
+    const chatMessages = document.getElementById("chat-messages");
+    chatMessages.innerHTML = "";
     this.loadMessages();
     this.addActiveClass();
   }
@@ -359,6 +363,12 @@ export default class extends AbstractView {
     const path = window.location.pathname;
     const id = path.split("/")[2];
     this.contacter = this.contacts.find(contact => contact.id == id);
+    // clear the chat messages
+    if (this.contacter) {
+      const chatMessages = document.getElementById("chat-messages");
+      chatMessages.innerHTML = "";
+      this.addActiveClass();
+    }
   }
 
   // Add active class to the selected contact in the sidebar
