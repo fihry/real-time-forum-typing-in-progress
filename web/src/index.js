@@ -13,6 +13,7 @@ import Chat from "./views/chatView.js";
 import ContactsBarView from "./views/contactsBarView.js";
 import ws from "./pkg/ws.js"
 
+let homeInstance = null;
 const pathToRegex = (path) =>
   new RegExp("^" + path.replace(/\//g, "\\/").replace(/:\w+/g, "(.+)") + "$");
 
@@ -90,6 +91,11 @@ const router = async () => {
   }
 
   const view = new match.route.view(getParams(match), user);
+  if (homeInstance?.destroyEvents) {
+    homeInstance?.destroyEvents();
+  }
+  homeInstance = view;
+
   view.removeStyles();
 
   if (match.route.style) {
