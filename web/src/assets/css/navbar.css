@@ -10,10 +10,14 @@
   z-index: 100;
 }
 
-.logo {
+#logo {
   font-size: 1.5rem;
   font-weight: bold;
   color: var(--text-primary);
+  text-decoration: none;
+    background: linear-gradient(90deg, #108cff, #06ff83);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
 
@@ -23,9 +27,17 @@
   cursor: pointer;
   font-weight: 600;
   transition: background-color 0.3s ease;
+  display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
 }
 
-#nav-user-links {
+.hamburger {
+  display: none;
+}
+
+.nav-user-links {
   display: flex;
   align-items: center;
   gap: 0.8rem;
@@ -40,10 +52,11 @@
   border: 1px solid #ffffff;
   color: #ffffff;
 }
+
 .notification #badge {
   position: absolute;
   width: 20px;
-    height: 20px;
+  height: 20px;
     top: -10px;
     right: -10px;
     padding: 0.2rem;
@@ -57,13 +70,20 @@
   background-color: var(--accent-color);
   color: white;
 }
+
 .login,
-.create {
+.create,
+.messages {
   background-color: #ffffff18;
   border: 1px solid #ffffff;
   color: #ffffff;
 }
 
+#logout-btn {
+  background-color: #ffffff18;
+  border: 1px solid #ffffff;
+  padding: 5px 10px;
+}
 @media screen and (max-width: 768px) {
   .navbar {
     padding: 1rem;
@@ -73,4 +93,74 @@
     font-size: 1.2rem;
     font-weight: bold;
   }
+.links-menu {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-primary);
+  text-decoration: none;
+}
+
+.links {
+  display: none
+}
+
+label {
+  width: 35px;
+  height: 35px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.hamburger {
+  display: block;
+  cursor: pointer;
+}
+
+.hamburger input {
+  display: none;
+}
+
+.hamburger svg {
+  height: 100%;
+  transition: transform 600ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.line {
+  fill: none;
+  stroke: rgb(255, 255, 255);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
+  transition:
+    stroke-dasharray 600ms cubic-bezier(0.4, 0, 0.2, 1),
+    stroke-dashoffset 600ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.line-top-bottom {
+  stroke-dasharray: 12 63;
+}
+
+.hamburger input:checked+svg {
+  transform: rotate(-45deg);
+}
+
+.hamburger input:checked+svg .line-top-bottom {
+  stroke-dasharray: 20 300;
+  stroke-dashoffset: -32.42;
+}
+
+.hamburger input:checked+svg .links {
+  display: block;
+  position: absolute;
+  top: 71px;
+  left: 0;
+  width: 100%;
+  background-color: var(--background-secondary);
+  z-index: 100;
+  padding: 1rem;
+  border-bottom: 1px solid var(--border-color);
+}
 }

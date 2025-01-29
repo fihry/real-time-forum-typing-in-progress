@@ -14,20 +14,37 @@ export default class extends AbstractView {
   async getHtml() {
     const isAuthorized = await fetcher.isLoggedIn();
     return `
-         <a href="/" data-link id="logo">Real Time Forum</a>
-        <div id="nav-auth-links" class="${isAuthorized ? "hidden" : ""}">
-            <button id="login-btn" class="btn login">Login</button>
-            <button id="register-btn" class="btn register">Register</button>
+       <a href="/" data-link id="logo" >ZellCode</a>
+       <div class="links-menu">
+        <label class="hamburger">
+        <input type="checkbox" />
+        <svg viewBox="0 0 32 32">
+        <path class="line line-top-bottom" d="M27 10 13 10C10.8 10 9 8.2 9 6 9 3.5 10.8 2 13 2 15.2 2 17 3.8 17 6L17 26C17 28.2 18.8 30 21 30 23.2 30 25 28.2 25 26 25 23.8 23.2 22 21 22L7 22">
+        </path>
+        <path class="line" d="M7 16 27 16"></path>
+        </svg>
+        </label>
+        <div class="links">
+         <div id="nav-auth-links" class="${isAuthorized ? "hidden" : "nav-auth-links"}">
+        <button id="login-btn" class="btn login" style="color: #fff;">Login</button>
+        <button id="register-btn" class="btn register" style="color: #fff;">Register</button>
         </div>
-        <div id="nav-user-links" class="${isAuthorized ? "" : "hidden"}">
-        ${location.pathname !== "/create-post"
-        ? '<button id="create-post-btn" class="btn create">Create Post</button>'
-        : ""
-      }
-        <button id="messages-btn" class="btn messages">messages</button>
-            <button id="logout-btn" class="btn logout">Logout</button>
+        <div id="nav-user-links" class="${isAuthorized ? "nav-user-links" : "hidden"}">
+        <button id="create-post-btn" class="btn create" style="color: #fff;">Create Post</button>
+        <button id="messages-btn" class="btn messages" style="color: #fff;">Messages</button>
+        <button id="logout-btn" class="btn logout" style="color: #fff;">
+        Logout
+<svg width="20px" height="20px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M12 20C7.58172 20 4 16.4183 4 12C4 7.58172 7.58172 4 12 4" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
+<path d="M10 12H20M20 12L17 9M20 12L17 15" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+        </button>
         </div>
-        `;
+        </div>
+      </div>
+       </div>
+      </div>
+      `;
   }
 
   async init() {
