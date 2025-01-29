@@ -416,6 +416,7 @@ export class Home extends AbstractView {
   constructor(params) {
     super(params);
     this.setTitle("Forum");
+    this.selectGategory = this.selectGategory.bind(this);
   }
 
   async getHtml() {
@@ -436,26 +437,32 @@ export class Home extends AbstractView {
     const postsContainer = document.getElementById("posts");
     postsContainer?.addEventListener("scroll", handleScroll);
 
+    
+    document.addEventListener("category-selected", this.selectGategory);
+  }
+  
+  
+  destroyEvents() {
+    document.removeEventListener("category-selected", this.selectGategory);
+  }
+  async selectGategory(e) {
+    const category_choosed = e.detail.category;
     const user = Utils.getUser();
 
-    document.addEventListener("category-selected", async (e) => {
-      const category_choosed = e.detail.category;
+    offset = 0;
+    const postsDoc = document.querySelector(".posts-grid");
+    postsDoc.textContent = ""; // Clear previous posts
 
-      offset = 0;
-      const postsDoc = document.querySelector(".posts-grid");
-      postsDoc.textContent = ""; // Clear previous posts
+    if (category_choosed === "my-posts") {
+      await getUserPosts(user.id); // Fetch user's created posts
+    } else if (category_choosed === "liked-posts") {
+      await getUserLikedPosts(user.id); // Fetch user's liked posts
+    } else if (category_choosed === "disliked-posts") {
+      await getUserDislikedPosts(user.id); // Fetch user's disliked posts
+    } else {
+      await getPostsByCategory(category_choosed); // Fetch posts by category
+    }
 
-      if (category_choosed === "my-posts") {
-        await getUserPosts(user.id); // Fetch user's created posts
-      } else if (category_choosed === "liked-posts") {
-        await getUserLikedPosts(user.id); // Fetch user's liked posts
-      } else if (category_choosed === "disliked-posts") {
-        await getUserDislikedPosts(user.id); // Fetch user's disliked posts
-      } else {
-        await getPostsByCategory(category_choosed); // Fetch posts by category
-      }
-
-      category = category_choosed;
-    });
+    category = category_choosed;
   }
 }
