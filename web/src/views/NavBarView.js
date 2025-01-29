@@ -101,29 +101,5 @@ export default class extends AbstractView {
       links.classList.toggle("links-active");
       // links.style.display = hamburger.checked ? "block" : "none";
     }
-    //init websocket
-    Ws.init();
-    this.ws = Ws.getWs();
-    this.sender = {};
-    let n = 1;
-    const messagesBtn = document.querySelector("#messages-btn");
-    if (messagesBtn) {
-      this.ws.onmessage = (event) => {
-        console.log("message received");
-        const data = JSON.parse(event.data);
-        if (data.action === "new_message") {
-          messagesBtn.classList.add("notification");
-          // give this badge a number
-          messagesBtn.innerHTML = `messages <span id='badge'>${n++}</span>`;
-          messagesBtn.addEventListener("click", () => {
-            messagesBtn.classList.remove("notification");
-          });
-        }
-      };
-    }
-
-    this.ws.onerror = (event) => {
-      console.error("WebSocket error:", event);
-    };
   }
 }
