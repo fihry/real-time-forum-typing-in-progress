@@ -178,17 +178,6 @@ body {
   color: #ffffff;
 }
 
-.online .user-nickname::after {
-  content: 'online';
-  border-radius: 50%;
-  z-index: 100;
-  color: #00e613;
-  /* position: absolute; */
-  margin-left: 25px;
-  font-size: 1 rem;
-  font-weight: 350;
-}
-
 .online .user-avatar::before {
   content: '';
   position: absolute;

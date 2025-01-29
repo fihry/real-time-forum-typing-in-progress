@@ -58,16 +58,31 @@
   }
 
   .togel-sidbar {
-    width: 100%;
-    height: 50px;
-    position: absolute;
-    top: 5px;
-    right: 5px;
-    padding: 5px;
     display: flex;
     justify-content: flex-end;
     align-items: center;
-    ;
+    gap: 10px;
+  }
+
+  .togel {
+    width: max-content;
+    height: max-content;
+    color: var(--text-secondary);
+    position: absolute;
+    top: 8px;
+    right: 5px;
+    padding: 5px;
+    border: 1px solid var(--border-color);
+    background-color: transparent;
+    border-radius: 10px;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .togel-sidbar :hover {
+    box-shadow: 0 0 5px 0 #3d3d3da9;
   }
 
   .sidebar .sidebar-section {
@@ -76,31 +91,5 @@
     margin-bottom: 1.5rem;
   }
 
-  .sidebar .togel-sidbar button {
-    width: max-content;
-    height: max-content;
-    color: var(--text-secondary);
-    border: none;
-    cursor: pointer;
-    background-color: transparent;
-    border: 1px solid var(--border-color);
-    border-radius: 10px;
-    transition: box-shadow 0.3s ease;
-  }
 
-  .togel-sidbar button:hover {
-    box-shadow: 0 0 5px 0 #3d3d3da9;
-  }
-
-  .togel-sidbar button span {
-    display: flex;
-    justify-content: space-evenly;
-    align-items: center;
-  }
-
-  .togel-sidbar button span img {
-    width: 20px;
-    height: 20px;
-    margin-left: 10px;
-  }
 }

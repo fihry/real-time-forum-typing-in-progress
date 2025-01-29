@@ -12,9 +12,8 @@ export default class extends AbstractView {
 
     let sidebarHtml = `
       <div id="sidebar" class="sidebar">
-        ${
-          isAuthorized
-            ? `
+        ${isAuthorized
+        ? `
           <div class="sidebar-section">
             <div class="sidebar-section-title">My Posts</div>
             <div class="sidebar-menu-item" data-category="my-posts">My Posts</div>
@@ -22,24 +21,29 @@ export default class extends AbstractView {
             <div class="sidebar-menu-item" data-category="disliked-posts">Disliked Posts</div>
           </div>
         `
-            : ""
-        }
+      : ""
+      }
 
         <div class="sidebar-section">
           <div class="sidebar-section-title">Discover Categories</div>
           ${categories
-            .map(
-              (category) => `
+      .map(
+        (category) => `
             <div class="sidebar-menu-item" data-category="${category.name}">
               ${category.name}
             </div>
           `
-            )
-            .join("")}
+    )
+      .join("")}
         </div>
         <div class="togel-sidbar">
-          <button id="togel-sidbar" class="togel-sidbar">
-          <span> Filter by catigores <img src="/src/assets/img/settings-sliders.svg" alt="filter"></span>
+          <button id="togel-sidbar" class="togel">
+          Filter by catigores
+          <svg xmlns="http://www.w3.org/2000/svg" id="Outline" viewBox="0 0 24 24" width="20px" height="20px">
+            <path fill="#ffff" d="M1,4.75H3.736a3.728,3.728,0,0,0,7.195,0H23a1,1,0,0,0,0-2H10.931a3.728,3.728,0,0,0-7.195,0H1a1,1,0,0,0,0,2ZM7.333,2a1.75,1.75,0,1,1-1.75,1.75A1.752,1.752,0,0,1,7.333,2Z" />
+            <path fill="#ffff" d="M23,11H20.264a3.727,3.727,0,0,0-7.194,0H1a1,1,0,0,0,0,2H13.07a3.727,3.727,0,0,0,7.194,0H23a1,1,0,0,0,0-2Zm-6.333,2.75A1.75,1.75,0,1,1,18.417,12,1.752,1.752,0,0,1,16.667,13.75Z" />
+            <path fill="#ffff" d="M23,19.25H10.931a3.728,3.728,0,0,0-7.195,0H1a1,1,0,0,0,0,2H3.736a3.728,3.728,0,0,0,7.195,0H23a1,1,0,0,0,0-2ZM7.333,22a1.75,1.75,0,1,1,1.75-1.75A1.753,1.753,0,0,1,7.333,22Z" />
+            </svg>
           </button>
         </div>
       </div>
@@ -80,16 +84,7 @@ export default class extends AbstractView {
       check.addEventListener("click", () => {
         const sidebarSection = document.querySelectorAll(".sidebar-section");
         sidebarSection.forEach((item) => {
-          switch (item.style.display) {
-            case "block":
-              item.style.display = "none";
-              break;
-            case "none":
-              item.style.display = "block";
-              break;
-            default:
-              item.style.display = "block";
-          }
+          item.style.display = item.style.display === "block" ? "none" : "block";
           // on resize
           window.addEventListener("resize", () => {
             if (window.innerWidth > 768) {
