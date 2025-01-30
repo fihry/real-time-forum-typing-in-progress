@@ -86,24 +86,24 @@ export default class extends AbstractView {
   reconnectWebSocket() {
     const showError = document.getElementById("showError");
     const chatUsers = document?.querySelector(".chat-users");
+    console.log('you just disconnected, reconnecting...')
     setTimeout(() => {
-      console.log("reconnecting")
-      Ws.deinitialize()
       Ws.init();
+            // get contacts
+      this.ws.send(JSON.stringify({
+        action: "get_contacts",
+      })); 
+      if (this.ws.readyState === WebSocket.OPEN) {
+        console.log("Websocket connection well established")
+      }
       this.ws = Ws.getWs();
       this.ws.onmessage = (event) => this.handleMessage(event, chatUsers, showError);
       this.ws.onclose = (event) => this.handleClose(event, showError);
       this.ws.onerror = (event) => this.handleError(event, showError);
-      if (this.ws.readyState === WebSocket.OPEN) {
-        console.log("reconnecting")
-        this.ws.send(JSON.stringify({
-          action: "get_user",
-        }));
-        // get contacts
-        this.ws.send(JSON.stringify({
-          action: "get_contacts",
-        }));        clearTimeout()
-      }
+      this.ws.send(JSON.stringify({
+        action: "get_user",
+      }));
+
     }, 2000); // Retry every 2 seconds
   }
   // Handle incoming WebSocket messages
