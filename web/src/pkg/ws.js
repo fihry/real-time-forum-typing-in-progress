@@ -5,7 +5,7 @@ class WebSocketService {
 
   init() {
     if (WebSocketService.isInitialized) return;
-    console.log("Initializing WebSocket");
+    WebSocketService.ws?.close();
     WebSocketService.ws = new WebSocket(`ws://${window.location.host}/api/ws/chat`);
     WebSocketService.isInitialized = true;
     console.log("WebSocket initialized", WebSocketService.ws);
@@ -22,6 +22,10 @@ class WebSocketService {
       console.log("WebSocket closed");
     };
 
+  }
+
+  deinitialize() {
+    WebSocketService.isInitialized = false;
   }
 
   notify() {

@@ -54,14 +54,21 @@ export default class extends AbstractView {
     // Initialize WebSocket connection
 
     Ws.init();
-    this.ws = Ws.getWs();
-    this.ws.send(JSON.stringify({
-      action: "get_user",
-    }));
-    // get contacts
-    this.ws.send(JSON.stringify({
-      action: "get_contacts",
-    }));
+    this.ws =  Ws.getWs();
+    if (this.ws.readyState === WebSocket.OPEN) {
+      this.ws.send(JSON.stringify({
+        action: "get_user",
+      }));
+      // get contacts
+      this.ws.send(JSON.stringify({
+        action: "get_contacts",
+      }));
+    } else {
+      console.error("WebSocket is not open. Current state: " + this.ws.readyState);
+      this.reconnectWebSocket()
+    }
+    
+
     // Handle incoming WebSocket messages
     this.ws.onmessage = (event) => {
       this.handleMessage(event, chatUsers, showError);
@@ -75,6 +82,30 @@ export default class extends AbstractView {
     showError.textContent = "";
   }
 
+
+  reconnectWebSocket() {
+    const showError = document.getElementById("showError");
+    const chatUsers = document?.querySelector(".chat-users");
+    setTimeout(() => {
+      console.log("reconnecting")
+      Ws.deinitialize()
+      Ws.init();
+      this.ws = Ws.getWs();
+      this.ws.onmessage = (event) => this.handleMessage(event, chatUsers, showError);
+      this.ws.onclose = (event) => this.handleClose(event, showError);
+      this.ws.onerror = (event) => this.handleError(event, showError);
+      if (this.ws.readyState === WebSocket.OPEN) {
+        console.log("reconnecting")
+        this.ws.send(JSON.stringify({
+          action: "get_user",
+        }));
+        // get contacts
+        this.ws.send(JSON.stringify({
+          action: "get_contacts",
+        }));        clearTimeout()
+      }
+    }, 2000); // Retry every 2 seconds
+  }
   // Handle incoming WebSocket messages
   handleMessage(event, chatUsers, showError) {
     const data = JSON.parse(event.data);
@@ -84,6 +115,7 @@ export default class extends AbstractView {
           this.sender = data;
           break;
         case "get_contacts":
+          console.log('received message')
           this.contacts = data.Contacts;
           this.displayContacts(chatUsers);
           this.getContacter();
@@ -336,7 +368,7 @@ export default class extends AbstractView {
       if (message && message.length > 0) {
         this.ws.send(JSON.stringify({
           action: "new_message",
-          receiver_id: this.contacter.id,
+          receiver_id: this.contacter?.id,
           sender_id: this.sender.id,
           message: message
         }));
