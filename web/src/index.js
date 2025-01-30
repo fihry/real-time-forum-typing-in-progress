@@ -122,6 +122,7 @@ const router = async () => {
     view.addStyle("main-content");
     view.addStyle("sidebar");
     view.addStyle("post-card");
+    view.addStyle("contactsBar");
 
     let sideBarHtml = "";
     let SideBarView;

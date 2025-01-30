@@ -51,15 +51,10 @@ const getPost = async (postID) => {
       dislikeBtn.addEventListener("click", handleDislike);
       dislikeListenerSet = true; // Mark as set
     }
-
     const commentsDoc = document.getElementById("comments");
     commentsDoc.innerHTML = ""; // Clear previous comments
 
-    if (post.comments.length > 0) {
-      const commentText = document.createElement("h3");
-      commentText.innerText = "Comments: ";
-      commentsDoc.append(commentText);
-    }
+
 
     for (let i = post.comments.length - 1; i >= 0; i--) {
       const comment = post.comments[i];
@@ -234,7 +229,7 @@ export default class extends AbstractView {
 
   async getHtml() {
     const isAuthorized = Boolean(this.user.id);
-    return `
+    return /*html*/`
     
             <div class="post-container">
             <div class="post-box">
@@ -292,9 +287,12 @@ export default class extends AbstractView {
                 : ""
             }
 
+          <div class="commentsBox">
+            <h3>Comments:</h3>
             <div id="comments" class="comments-container">
                 <!-- Comments will be dynamically populated here -->
             </div>
+          </div>
         </div>
         </div>
         `;

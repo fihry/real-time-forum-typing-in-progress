@@ -12,7 +12,7 @@ export default class extends AbstractView {
     const categories = (await this.getCategories()) || [];
     const isAuthorized = Boolean(this.user.id);
 
-    let sidebarHtml = `
+    let sidebarHtml = /*html*/ `
       <div id="sidebar" class="sidebar">
         ${isAuthorized
         ? `

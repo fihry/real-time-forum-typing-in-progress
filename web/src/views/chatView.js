@@ -50,7 +50,6 @@ export default class extends AbstractView {
   async init() {
     const showError = document.getElementById("showError");
     const chatUsers = document?.querySelector(".chat-users");
-    const chatMessages = document?.querySelector("#chat-messages");
     // Initialize WebSocket connection
 
     Ws.init();
@@ -75,14 +74,12 @@ export default class extends AbstractView {
     // initialize the contacter and load the messages
     this.removeMessagesBtn();
     // Error handling for WebSocket connection
-    this.ws.onclose = (event) => this.handleClose(event, showError);
-    this.ws.onerror = (event) => this.handleError(event, showError);
-    showError.textContent = "";
+    this.ws.onclose = (event) => this.handleClose(event);
+    this.ws.onerror = (event) => this.handleError(event, error);
   }
 
 
   reconnectWebSocket() {
-    const showError = document.getElementById("showError");
     const chatUsers = document?.querySelector(".chat-users");
     console.log('you just disconnected, reconnecting...')
     setTimeout(() => {
@@ -95,9 +92,9 @@ export default class extends AbstractView {
         console.log("Websocket connection well established")
       }
       this.ws = Ws.getWs();
-      this.ws.onmessage = (event) => this.handleMessage(event, chatUsers, showError);
+      this.ws.onmessage = (event) => this.handleMessage(event, chatUsers);
       this.ws.onclose = (event) => this.handleClose(event, showError);
-      this.ws.onerror = (event) => this.handleError(event, showError);
+      this.ws.onerror = (event) => this.handleError(event, error);
       this.ws.send(JSON.stringify({
         action: "get_user",
       }));
@@ -105,7 +102,7 @@ export default class extends AbstractView {
     }, 2000); // Retry every 2 seconds
   }
   // Handle incoming WebSocket messages
-  handleMessage(event, chatUsers, showError) {
+  handleMessage(event, chatUsers) {
     const data = JSON.parse(event.data);
     if (data) {
       switch (data.action) {
@@ -113,7 +110,6 @@ export default class extends AbstractView {
           this.sender = data;
           break;
         case "get_contacts":
-          console.log('received message')
           this.contacts = data.Contacts;
           this.displayContacts(chatUsers);
           this.getContacter();
@@ -140,7 +136,7 @@ export default class extends AbstractView {
           break;
         case "get_messages":
           this.msgStatus = data.status;
-          this.displayMessages(showError, data);
+          this.displayMessages(data);
           break;
         default:
           break;
@@ -185,7 +181,7 @@ export default class extends AbstractView {
   }
 
   // Display messages for the selected contact
-  displayMessages(showError, data) {
+  displayMessages(data) {
     const chatMessages = document.getElementById("chat-messages");
     this.messages.push(...data.Messages)
     let index = this.messages.findIndex(message => message.id === data.Messages[0].id);
@@ -211,7 +207,7 @@ export default class extends AbstractView {
       chatMessages.scrollTop = chatMessages.scrollHeight / 2.5; // Scroll to the bottom after loading new messages
     } else {
       if (this.msgOffset === 0) {
-        showError.textContent = "No messages found.";
+        this.handleError({}, "No messages found.");
       } else {
         this.ended = true; // No more messages to load
       }
@@ -249,7 +245,6 @@ export default class extends AbstractView {
     if (this.contacts.length > 0) {
       this.contacts.forEach(contact => {
         if (contact.id !== this.sender.id) {
-          console.log(contact);
           const contactElement = document.createElement("div");
           contactElement.className = "chat-user";
           // add class based on status online/offline
@@ -336,7 +331,6 @@ export default class extends AbstractView {
 
   // Display a single message (from local input)
   displayMessage(message) {
-    console.log(message);
     const chatMessages = document.getElementById("chat-messages");
     const messageElement = document.createElement("div");
     messageElement.className = `chat-message ${message.sender_id === this.contacter.id ? "chat-user1" : "chat-user2"}`;
@@ -382,7 +376,7 @@ export default class extends AbstractView {
         messageInput.value = "";
         this.changeContactPlace(this.contacter);
       } else {
-        showError.textContent = "Message cannot be empty.";
+        this.handleError({}, "Please enter a message.");
       }
     });
   }
@@ -414,25 +408,33 @@ export default class extends AbstractView {
       }
     });
   }
-
   // Remove the messages-btn from the navbar when the page is in chat
   removeMessagesBtn() {
     const messagesBtn = document.querySelector("#messages-btn");
     if (messagesBtn) {
-      messagesBtn.remove();
+      // remove the notification badge style display none
+      const notificationBadge = document.querySelector(".notification-badge");
+      notificationBadge.style.display = "none";
     }
   }
 
   // Error handling for WebSocket connection
-  handleError(event, showError) {
+  handleError(event, message) {
+    const showError = document.getElementById("showError");
     console.error("WebSocket error:", event);
-    showError.textContent = "WebSocket error occurred.";
+    // Display error message and hide after 3 seconds
+    showError.textContent = message;
+    showError.style.display = "block";
+    setTimeout(() => {
+      showError.style.display = "none";
+    }, 3000);// 3 seconds
   }
 
   // Handle WebSocket connection close
-  handleClose(event, showError) {
+  handleClose(event) {
     console.log("WebSocket connection closed:", event);
-    showError.textContent = "Connection closed.";
+    this.handleError(event, "WebSocket connection closed. Reconnecting...");
+    this.reconnectWebSocket();
   }
 
   // Sanitize message content to prevent XSS
