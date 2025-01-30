@@ -15,8 +15,7 @@ class WebSocketService {
         action: "get_user"
       }));
     };
-
-
+    this.notify();
     WebSocketService.ws.onclose = () => {
       WebSocketService.isInitialized = false;
       console.log("WebSocket closed");
@@ -26,7 +25,7 @@ class WebSocketService {
 
   notify() {
     let n = 1;
-    WebSocketService.ws.onmessage = (event) => {
+    WebSocketService.ws.addEventListener("message", event => {
       const data = JSON.parse(event.data);
       switch (data.action) {
         case "new_message":
@@ -48,7 +47,7 @@ class WebSocketService {
           console.log("User status changed");
           break;
       }
-    }
+    });
   }
 
   getWs() {

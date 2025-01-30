@@ -26,9 +26,7 @@ export default class extends AbstractView {
       action: "get_contacts",
     }));
     // Handle incoming WebSocket messages
-    this.ws.onmessage = (event) => {
-      this.handleMessage(event);
-    };
+    this.ws.addEventListener("message", (event) => this.handleMessage(event));
 
     // Error handling for WebSocket connection
     this.ws.onclose = (event) => this.handleClose(event, showError);

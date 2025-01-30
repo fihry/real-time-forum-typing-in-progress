@@ -63,9 +63,7 @@ export default class extends AbstractView {
       action: "get_contacts",
     }));
     // Handle incoming WebSocket messages
-    this.ws.onmessage = (event) => {
-      this.handleMessage(event, chatUsers, showError);
-    };
+    this.ws.addEventListener("message", (event) => this.handleMessage(event, chatUsers, showError));
 
     // initialize the contacter and load the messages
     this.removeMessagesBtn();
@@ -285,7 +283,7 @@ export default class extends AbstractView {
   // Load more messages when the user scrolls to the top
   loadMoreMessages() {
     const chatMessages = document.getElementById("chat-messages");
-    if (chatMessages.scrollTop === 0 && this.msgStatus !== 404) {
+    if (chatMessages?.scrollTop === 0 && this.msgStatus !== 404) {
       this.msgOffset += this.msgLimit;
       this.loadMessages();
     } else if (this.msgStatus === 404) {
