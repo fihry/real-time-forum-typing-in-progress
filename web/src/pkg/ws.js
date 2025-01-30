@@ -10,7 +10,7 @@ class WebSocketService {
     WebSocketService.isInitialized = true;
     console.log("WebSocket initialized", WebSocketService.ws);
     WebSocketService.ws.onopen = () => {
-      console.log(`welcome to the real_time_forum`);
+      console.log(`welcome to the real_time_ZellCode`);
       WebSocketService.ws.send(JSON.stringify({
         action: "get_user"
       }));
@@ -35,10 +35,14 @@ class WebSocketService {
         case "new_message":
           const messagesBtn = document.querySelector("#messages-btn");
           messagesBtn.classList.add("notification");
-          messagesBtn.innerHTML = `messages <span class='badge'>${n++}</span>`;
+          const badge = document.querySelector('.badge');
+          badge.innerText = n++;
           messagesBtn.addEventListener("click", () => {
             messagesBtn.classList.remove("notification");
+            badge.innerText = "";
+            n = 1;
           });
+          
 
           // play raciving message sound
           const audio = new Audio("/src/assets/audio/receiving.mp3");

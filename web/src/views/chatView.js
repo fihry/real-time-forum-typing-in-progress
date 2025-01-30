@@ -53,7 +53,7 @@ export default class extends AbstractView {
     // Initialize WebSocket connection
 
     Ws.init();
-    this.ws =  Ws.getWs();
+    this.ws = Ws.getWs();
     if (this.ws.readyState === WebSocket.OPEN) {
       this.ws.send(JSON.stringify({
         action: "get_user",
@@ -66,7 +66,7 @@ export default class extends AbstractView {
       console.error("WebSocket is not open. Current state: " + this.ws.readyState);
       this.reconnectWebSocket()
     }
-    
+
 
     // Handle incoming WebSocket messages
     this.ws.addEventListener("message", (event) => this.handleMessage(event, chatUsers, showError));
@@ -75,7 +75,7 @@ export default class extends AbstractView {
     this.removeMessagesBtn();
     // Error handling for WebSocket connection
     this.ws.onclose = (event) => this.handleClose(event);
-    this.ws.onerror = (event) => this.handleError(event, error);
+    this.ws.onerror = (event) => this.handleError(event);
   }
 
 
@@ -84,17 +84,17 @@ export default class extends AbstractView {
     console.log('you just disconnected, reconnecting...')
     setTimeout(() => {
       Ws.init();
-            // get contacts
+      // get contacts
       this.ws.send(JSON.stringify({
         action: "get_contacts",
-      })); 
+      }));
       if (this.ws.readyState === WebSocket.OPEN) {
         console.log("Websocket connection well established")
       }
       this.ws = Ws.getWs();
       this.ws.onmessage = (event) => this.handleMessage(event, chatUsers);
       this.ws.onclose = (event) => this.handleClose(event, showError);
-      this.ws.onerror = (event) => this.handleError(event, error);
+      this.ws.onerror = (event) => this.handleError(event);
       this.ws.send(JSON.stringify({
         action: "get_user",
       }));
@@ -142,7 +142,7 @@ export default class extends AbstractView {
           break;
       }
     }
-    this.sendMessage(showError);
+    this.sendMessage();
   }
 
 
@@ -207,7 +207,7 @@ export default class extends AbstractView {
       chatMessages.scrollTop = chatMessages.scrollHeight / 2.5; // Scroll to the bottom after loading new messages
     } else {
       if (this.msgOffset === 0) {
-        this.handleError({}, "No messages found.");
+        this.handleError(null, "No messages found.");
       } else {
         this.ended = true; // No more messages to load
       }
@@ -247,13 +247,17 @@ export default class extends AbstractView {
         if (contact.id !== this.sender.id) {
           const contactElement = document.createElement("div");
           contactElement.className = "chat-user";
+          // add nickname at title attribute
+          contactElement.setAttribute("title", contact.nickname);
           // add class based on status online/offline
           contactElement.classList.add(contact.status === "online" ? "online" : "offline");
           const initials = contact.nickname.slice(0, 1).toUpperCase() + contact.nickname.slice(1, 2);
           contactElement.innerHTML = `
             <div class="user-avatar">${initials}</div>
-            <div class="user-nickname">${contact.nickname.length > 8 ? `${contact.nickname.slice(0, 8)}...` : contact.nickname}</div>`;
-          contactElement.addEventListener("click", () => this.selectContact(contact));
+            <div class="user-nickname">${contact.nickname.length > 8 ? `${contact.nickname.slice(0, 8)}...` : contact.nickname}</div>`
+          contactElement.addEventListener("click", () => {
+            this.selectContact(contact);
+          });
           chatUsers.appendChild(contactElement);
         }
       });
@@ -351,7 +355,7 @@ export default class extends AbstractView {
   }
 
   // Send a message to the selected contact
-  sendMessage(showError) {
+  sendMessage() {
     const chatForm = document.getElementById("chat-form");
     chatForm.addEventListener("submit", (event) => {
       event.preventDefault();
@@ -376,7 +380,7 @@ export default class extends AbstractView {
         messageInput.value = "";
         this.changeContactPlace(this.contacter);
       } else {
-        this.handleError({}, "Please enter a message.");
+        this.handleError(null, "Please enter a message.");
       }
     });
   }
@@ -401,10 +405,15 @@ export default class extends AbstractView {
     // get elements with class name chat-user that ahve the nickname of the contacter 
     const chatUsers = document.querySelectorAll(".chat-user");
     chatUsers.forEach(chatUser => {
-      if (chatUser.querySelector(".user-nickname").textContent === this.contacter.nickname) {
+      let nickname = chatUser.querySelector(".user-nickname").textContent;
+      if (nickname === this.contacter.nickname) {
         chatUser.classList.add("active");
       } else {
-        chatUser.classList.remove("active");
+        if (nickname.length > 8 && this.contacter?.nickname?.length > 8 && nickname.slice(0, 8) === this.contacter.nickname.slice(0, 8)) {
+          chatUser.classList.add("active");
+        } else {
+          chatUser.classList.remove("active");
+        }
       }
     });
   }
@@ -412,16 +421,13 @@ export default class extends AbstractView {
   removeMessagesBtn() {
     const messagesBtn = document.querySelector("#messages-btn");
     if (messagesBtn) {
-      // remove the notification badge style display none
-      const notificationBadge = document.querySelector(".notification-badge");
-      notificationBadge.style.display = "none";
+      messagesBtn.style.display = "none";
     }
   }
 
   // Error handling for WebSocket connection
-  handleError(event, message) {
+  handleError(message) {
     const showError = document.getElementById("showError");
-    console.error("WebSocket error:", event);
     // Display error message and hide after 3 seconds
     showError.textContent = message;
     showError.style.display = "block";

@@ -415,7 +415,7 @@ async function handleScroll() {
 export class Home extends AbstractView {
   constructor(params) {
     super(params);
-    this.setTitle("Forum");
+    this.setTitle("ZellCode");
     this.selectGategory = this.selectGategory.bind(this);
   }
 

@@ -11,9 +11,9 @@ export default class extends AbstractView {
 
   async getHtml() {
     return `
-    <div class="sideBar-chat">
-          <div class="chat-title">My contacts</div>
-          <div class="chat-users"></div>
+    <div class="contactsBare">
+          <div class="contacts-title">My contacts</div>
+          <div class="contacts"></div>
     </div>
     `;
   }
@@ -34,7 +34,7 @@ export default class extends AbstractView {
   }
 
   handleMessage(event) {
-    const chatUsers = document?.querySelector(".chat-users");
+    const chatUsers = document?.querySelector(".contacts");
     const data = JSON.parse(event.data);
     if (data) {
       switch (data.action) {
@@ -59,26 +59,27 @@ export default class extends AbstractView {
 
   }
 
-
-
   displayContacts(chatUsers) {
-    chatUsers.innerHTML = ""; // Clear existing contacts
+    if (chatUsers) {
+      chatUsers.innerHTML = "";
+    }
     if (this.contacts.length > 0) {
       this.contacts.forEach(contact => {
         if (contact.id !== this.sender.id) {
-          console.log(contact);
           const contactElement = document.createElement("div");
-          contactElement.className = "chat-user";
+          contactElement.className = "contact";
           // add class based on status online/offline
           contactElement.classList.add(contact.status === "online" ? "online" : "offline");
           const initials = contact.nickname.slice(0, 1).toUpperCase() + contact.nickname.slice(1, 2);
           contactElement.innerHTML = `
-            <div class="user-avatar">${initials}</div>
-            <div class="user-nickname">${contact.nickname.length > 8 ? `${contact.nickname.slice(0, 8)}...` : contact.nickname}</div>`;
+            <div class="contact-avatar">${initials}</div>
+            <div class="contact-nickname">${contact.nickname.length > 8 ? `${contact.nickname.slice(0, 8)}...` : contact.nickname}</div>`;
           contactElement.onclick = () => {
             navigateTo.navigateTo(`/chat/${contact.id}`)  // Navigate to chat page
           };
-          chatUsers.appendChild(contactElement);
+          if (chatUsers) {
+            chatUsers.appendChild(contactElement);
+          }
         }
       });
     }

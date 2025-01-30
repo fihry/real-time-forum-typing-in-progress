@@ -70,7 +70,6 @@ func messagessHandller( s *MessageService, conn *websocket.Conn, ctx context.Con
 
 		switch messageInfo.Action {
 		case "get_messages":
-			log.Println("Fetching messages" + messageInfo.Action + " " + fmt.Sprint(messageInfo.Limit) + " " + fmt.Sprint(messageInfo.Offset))
 			// Fetch messages by sender and receiver ID
 			messages, status, err := s.GetMessagesBySenderIDAndReceiverID(ctx, uint(messageInfo.SenderID), uint(messageInfo.ReceiverID), messageInfo.Limit, messageInfo.Offset)
 			if err != nil {
@@ -90,7 +89,6 @@ func messagessHandller( s *MessageService, conn *websocket.Conn, ctx context.Con
 				Action:   "get_messages",
 				Messages: messages,
 			}
-			log.Printf("Sending messages to client: %v", len(messagesOrder.Messages))
 			if err := conn.WriteJSON(messagesOrder); err != nil {
 				log.Printf("Error sending messages to client: %v", err)
 				return fmt.Errorf("error occurred while sending messages: %v", err)
@@ -101,7 +99,6 @@ func messagessHandller( s *MessageService, conn *websocket.Conn, ctx context.Con
 				log.Printf("Error sending user to client: %v", err)
 				return fmt.Errorf("error occurred while sending user: %v", err)
 			}
-			log.Printf("Sent user info to client: %v", user)
 		case "get_contacts":
 			// Fetch and send contacts
 			contactsOrder,status, err := getContacts(ctx, s, user.ID)
@@ -133,7 +130,6 @@ func messagessHandller( s *MessageService, conn *websocket.Conn, ctx context.Con
 			}
 			messageInfo.Nickname = contact.Nickname
 			messageInfo.Action = "new_message"
-			log.Printf("Sending message to receiver: %v", messageInfo)
 			// Write the message to the receiver
 			go func() {
 				if err := s.Manager.WriteToClient(ctx, messageInfo); err != nil {

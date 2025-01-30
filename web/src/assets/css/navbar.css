@@ -16,8 +16,8 @@
   color: var(--text-primary);
   text-decoration: none;
   background: linear-gradient(90deg, #108cff, #06ff83);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 
@@ -28,8 +28,8 @@
   transition: background-color 0.3s ease;
   display: flex;
   align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
+  justify-content: center;
+  gap: 0.5rem;
 }
 
 .links-menu {
@@ -39,6 +39,7 @@
   color: var(--text-primary);
   text-decoration: none;
 }
+
 .hamburger {
   display: none;
 }
@@ -49,27 +50,26 @@
   gap: 0.8rem;
 }
 
+
 .notification {
   position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: #ffffff18;
-  border: 1px solid #ffffff;
-  color: #ffffff;
 }
 
-.notification #badge {
+.notification .badge {
   position: absolute;
   width: 20px;
   height: 20px;
-  top: -10px;
-    right: -10px;
-    padding: 0.2rem;
-    background-color: #ffa704;
-    border: 1px solid #ffffff;
-    color: #ffffff;
+  top: -5px;
+  right: -5px;
+  padding: 0.2rem;
+  background-color: #75ff04c5;
+  border: 1px solid #ffffff81;
+  color: #ffffff;
   border-radius: 50%;
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .btn .register {
@@ -83,9 +83,22 @@
   border: 1px solid #ffffff;
   color: #ffffff;
 }
+
 .messages {
+  width: 3rem;
+  height: 2rem;
   background-color: #ffffff18;
-  padding: 5px 10px;
+  padding: 0.5rem;
+  background: url(/src/assets/img/messages.svg);
+  background-size: 25px;
+  background-repeat: no-repeat;
+  background-position: center;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #ffffff81;
+  cursor: pointer;
 }
 
 #logout-btn {
@@ -105,76 +118,71 @@
   }
 
 
-                                .links {
-                                  display: none
-                                }
+  .links {
+    display: none
+  }
 
-                                label {
-                                  width: 35px;
-                                  height: 35px;
-                                  display: flex;
-                                  align-items: center;
-                                  justify-content: center;
-                                  cursor: pointer;
-                                }
+  .hamburger {
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
 
-                                .hamburger {
-                                  display: block;
-                                  cursor: pointer;
-                                }
+  .hamburger input {
+    display: none;
+  }
 
-                                .hamburger input {
-                                  display: none;
-                                }
+  .hamburger svg {
+    height: 100%;
+    transition: transform 600ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
 
-                                .hamburger svg {
-                                  height: 100%;
-                                  transition: transform 600ms cubic-bezier(0.4, 0, 0.2, 1);
-                                }
+  .line {
+    fill: none;
+    stroke: rgb(255, 255, 255);
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 2;
+    transition:
+      stroke-dasharray 600ms cubic-bezier(0.4, 0, 0.2, 1),
+      stroke-dashoffset 600ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
 
-                                .line {
-                                  fill: none;
-                                  stroke: rgb(255, 255, 255);
-                                  stroke-linecap: round;
-                                  stroke-linejoin: round;
-                                  stroke-width: 2;
-                                  transition:
-                                    stroke-dasharray 600ms cubic-bezier(0.4, 0, 0.2, 1),
-                                    stroke-dashoffset 600ms cubic-bezier(0.4, 0, 0.2, 1);
-                                }
+  .line-top-bottom {
+    stroke-dasharray: 12 63;
+  }
 
-                                .line-top-bottom {
-                                  stroke-dasharray: 12 63;
-                                }
+  .hamburger input:checked+svg {
+    transform: rotate(-45deg);
+  }
 
-                                .hamburger input:checked+svg {
-                                  transform: rotate(-45deg);
-                                }
+  .hamburger input:checked+svg .line-top-bottom {
+    stroke-dasharray: 20 300;
+    stroke-dashoffset: -32.42;
+  }
 
-                                .hamburger input:checked+svg .line-top-bottom {
-                                  stroke-dasharray: 20 300;
-                                  stroke-dashoffset: -32.42;
-                                }
-
-                                .links-active {
-                                  display: flex;
-                                  flex-direction: column;
-                                  position: absolute;
-                                  top: 71px;
-                                  left: 0;
-                                  width: 100%;
+  .links-active {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    top: 71px;
+    left: 0;
+    width: 100%;
     height: max-content;
     background-color: var(--background-secondary);
     border-radius: 0px 0 10px 10px;
-      padding: 10px;
-    }
-    
-    .nav-user-links,
-    .nav-auth-links {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 10px;
-      gap: 1rem;
-    }
+    padding: 10px;
+  }
+
+  .nav-user-links,
+  .nav-auth-links {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+    gap: 1rem;
+  }
 }

@@ -31,7 +31,7 @@ export default class extends AbstractView {
 
     return `
         <div class="container">
-        <form id="form-createPost" class="form-createPost <text-center>" onsubmit="return false;">
+        <form id="form-createPost" class="form-createPost" onsubmit="return false;">
         <div class="mb-3">
             <label for="TitleInput" class="form-label">Title</label>
             <input maxlength="58" name="title" type="text" class="form-control" id="TitleInput" required>

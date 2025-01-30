@@ -23,6 +23,8 @@
     height: calc(100vh - 71px);
     flex-direction: column;
     margin: 0;
+    overflow: auto;
+      /* overflow-anchor: none; */
 
   }
   .posts-box{

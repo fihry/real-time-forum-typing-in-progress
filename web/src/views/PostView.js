@@ -10,7 +10,6 @@ let dislikeListenerSet = false; // Flag to track dislike button listener
 
 const getPost = async (postID) => {
   const post = await fetcher.get(getPostPath + postID);
-  console.log(post);
   if (post && post.msg != undefined) {
     Utils.showError(post.status, post.msg);
     return;
@@ -93,7 +92,7 @@ const voteComment = async (commentID, likeType) => {
   if (postIDFromURL) {
     await getPost(postIDFromURL);
   } else {
-    console.error("Could not find post ID");
+    Utils.showError(400, "Invalid post ID");
   }
 };
 
