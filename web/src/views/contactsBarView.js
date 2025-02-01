@@ -22,17 +22,42 @@ export default class extends AbstractView {
     this.ws = Ws.getWs();
     this.sender = {};
     // get contacts
-    this.ws.send(JSON.stringify({
-      action: "get_contacts",
-    }));
-    // Handle incoming WebSocket messages
-    this.ws.addEventListener("message", (event) => this.handleMessage(event));
+    if (this.ws.readyState === WebSocket.OPEN) {
+      this.ws.send(JSON.stringify({
+        action: "get_contacts",
+      }));
+      // Handle incoming WebSocket messages
+      this.ws.addEventListener("message", (event) => this.handleMessage(event));
+  
+      // Error handling for WebSocket connection
+      this.ws.onclose = (event) => this.handleClose(event, showError);
+      this.ws.onerror = (event) => this.handleError(event, showError);
+    }else {
+      console.error("WebSocket is not open. Current state: " + this.ws.readyState);
+      this.reconnectSocket()
+    }
 
-    // Error handling for WebSocket connection
-    this.ws.onclose = (event) => this.handleClose(event, showError);
-    this.ws.onerror = (event) => this.handleError(event, showError);
   }
 
+  reconnectSocket() {
+    console.log('you just disconnected, reconnecting...')
+    setTimeout(() => {
+      Ws.init();
+      // get contacts
+      this.ws.send(JSON.stringify({
+        action: "get_contacts",
+      }));
+      if (this.ws.readyState === WebSocket.OPEN) {
+        console.log("Websocket connection well established")
+      }
+      // Handle incoming WebSocket messages
+      this.ws.addEventListener("message", (event) => this.handleMessage(event));
+
+      // Error handling for WebSocket connection
+      this.ws.onclose = (event) => this.handleClose(event, showError);
+      this.ws.onerror = (event) => this.handleError(event, showError);
+    }, 2000);
+  }
   handleMessage(event) {
     const chatUsers = document?.querySelector(".contacts");
     const data = JSON.parse(event.data);

@@ -104,7 +104,7 @@ const router = async () => {
 
   if (user.role < match.route.minRole) {
     Utils.showError(401, "Please sign in to get access for this page");
-    window.location.href = "/sign-in";
+    navigateTo("/");
     return;
   }
   ws.init();
