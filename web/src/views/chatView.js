@@ -123,7 +123,7 @@ export default class extends AbstractView {
           // change the contact place in the sidebar to the top when a new message is received or sent
           const sender = this.contacts.find(contact => contact.id === data.sender_id);
           this.changeContactPlace(sender);
-          if (this.contacter.id === data.sender_id) {
+          if (this.contacter?.id === data.sender_id) {
             this.displayMessage(data);
           }
           break;
@@ -190,7 +190,7 @@ export default class extends AbstractView {
     if (data.Messages.length > 0) {
       data.Messages.forEach(message => {
         const messageElement = document.createElement("div");
-        messageElement.className = `chat-message ${message.sender_id === this.contacter.id ? "chat-user1" : "chat-user2"}`;
+        messageElement.className = `chat-message ${message.sender_id === this.contacter?.id ? "chat-user1" : "chat-user2"}`;
         const time = new Date(message.created_at).toLocaleString();
         messageElement.innerHTML = `
         <div class="time_message">${time}</div>
@@ -200,7 +200,7 @@ export default class extends AbstractView {
       `;
         const senderElement = document.createElement("div");
         senderElement.className = "message-sender";
-        senderElement.textContent = message.sender_id === this.sender.id ? this.sender.nickname : this.contacter.nickname;
+        senderElement.textContent = message.sender_id === this.sender.id ? this.sender.nickname : this.contacter?.nickname;
         messageElement.prepend(senderElement);
         chatMessages.prepend(messageElement); // Prepend to show new messages at the bottom
       });
@@ -406,7 +406,7 @@ export default class extends AbstractView {
     const chatUsers = document.querySelectorAll(".chat-user");
     chatUsers.forEach(chatUser => {
       let nickname = chatUser.querySelector(".user-nickname").textContent;
-      if (nickname === this.contacter.nickname) {
+      if (nickname === this.contacter?.nickname) {
         chatUser.classList.add("active");
       } else {
         if (nickname.length > 8 && this.contacter?.nickname?.length > 8 && nickname.slice(0, 8) === this.contacter.nickname.slice(0, 8)) {
