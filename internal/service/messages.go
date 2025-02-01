@@ -103,7 +103,6 @@ func messagessHandller(s *MessageService, conn *websocket.Conn, ctx context.Cont
 			// Fetch and send contacts
 			contactsOrder, status, err := getContacts(ctx, s, user.ID)
 			if err != nil || status != http.StatusOK {
-				fmt.Println("in this case")
 				return fmt.Errorf("error occurred while getting contacts: %v", err)
 			}
 			if err := conn.WriteJSON(contactsOrder); err != nil {
@@ -158,7 +157,6 @@ func getContacts(ctx context.Context, s *MessageService, id uint) (entity.Consta
 			continue
 		}
 		online := s.Manager.IsClientConnected(contact.ID) 
-		fmt.Println(contact.ID, s.Manager.GetClient(contact.ID))
 		if online {
 			contacts[i].Status = "online"
 		} else {
