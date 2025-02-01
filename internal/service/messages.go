@@ -34,14 +34,13 @@ func (s *MessageService) Websocket(conn *websocket.Conn, ctx context.Context, se
 	go s.Manager.AddClient(uint(id), conn)
 	defer s.Manager.RemoveClient(uint(id))
 
-
 	var user entity.Contact
 	user, _, err := s.GetUserByID(ctx, uint(id))
 	if err != nil {
 		log.Printf("Error getting user: %v", err)
 		return fmt.Errorf("error occurred while getting user: %v", err)
 	}
-  // Update user status to online
+	// Update user status to online
 	user.Status = "online"
 	user.Action = "get_user"
 
@@ -53,14 +52,14 @@ func (s *MessageService) Websocket(conn *websocket.Conn, ctx context.Context, se
 	return nil
 }
 
-func messagessHandller( s *MessageService, conn *websocket.Conn, ctx context.Context, user entity.Contact) error {
+func messagessHandller(s *MessageService, conn *websocket.Conn, ctx context.Context, user entity.Contact) error {
 	for {
 		_, message, err := conn.ReadMessage()
 		if err != nil {
 			log.Printf("Error reading message: %v", err)
 			return err
 		}
-		
+
 		var messageInfo entity.Message
 		messageInfo.SenderID = user.ID
 		if err := json.Unmarshal(message, &messageInfo); err != nil {
@@ -77,8 +76,8 @@ func messagessHandller( s *MessageService, conn *websocket.Conn, ctx context.Con
 			}
 			if status == http.StatusNotFound {
 				conn.WriteJSON(entity.MessagesOrder{
-					Action: "get_messages",
-					Status: http.StatusNotFound,
+					Action:   "get_messages",
+					Status:   http.StatusNotFound,
 					Messages: []entity.Message{},
 				})
 				continue
@@ -101,14 +100,14 @@ func messagessHandller( s *MessageService, conn *websocket.Conn, ctx context.Con
 			}
 		case "get_contacts":
 			// Fetch and send contacts
-			contactsOrder,status, err := getContacts(ctx, s, user.ID)
+			contactsOrder, status, err := getContacts(ctx, s, user.ID)
 			if err != nil || status != http.StatusOK {
 				return fmt.Errorf("error occurred while getting contacts: %v", err)
 			}
-      if err := conn.WriteJSON(contactsOrder); err != nil {
-        log.Printf("Error sending contacts to client: %v", err)
-        return fmt.Errorf("error occurred while sending contacts: %v", err)
-      }
+			if err := conn.WriteJSON(contactsOrder); err != nil {
+				log.Printf("Error sending contacts to client: %v", err)
+				return fmt.Errorf("error occurred while sending contacts: %v", err)
+			}
 		case "new_message":
 			// check message are not empty
 			if messageInfo.Message == "" {
@@ -123,7 +122,7 @@ func messagessHandller( s *MessageService, conn *websocket.Conn, ctx context.Con
 			}
 
 			// Notify the receiver (if online)
-			contact ,_, err := s.GetUserByID(ctx, uint(messageInfo.SenderID))
+			contact, _, err := s.GetUserByID(ctx, uint(messageInfo.SenderID))
 			if err != nil {
 				log.Printf("Error getting user: %v", err)
 				return fmt.Errorf("error occurred while getting user: %v", err)
@@ -142,18 +141,22 @@ func messagessHandller( s *MessageService, conn *websocket.Conn, ctx context.Con
 	}
 }
 
-func getContacts(ctx context.Context, s *MessageService, id uint) (entity.ConstacsOrder,int, error) {
+func getContacts(ctx context.Context, s *MessageService, id uint) (entity.ConstacsOrder, int, error) {
 	// Retrieve contacts that have had recent communication
 	contacts, status, err := s.GetAllContacts(ctx, uint(id))
 	if err != nil || status != http.StatusOK {
 		return entity.ConstacsOrder{}, http.StatusInternalServerError, err
 	}
+	fmt.Println(len(contacts))
 	// Add online/offline status for each contact
-	for i, contact := range contacts {
-// ignore the user itself
+	for i:=0; i< len(contacts); i++ {
+		contact:= contacts[i]
+		// ignore the user itself
 		if contact.ID == id {
+			contacts = append(contacts[:i], contacts[i+1:]...)
 			continue
 		}
+		fmt.Println(contact.ID, id, i)
 		s.Manager.Mtx.RLock()
 		online := s.Manager.GetClient(contact.ID) != nil
 		s.Manager.Mtx.RUnlock()
