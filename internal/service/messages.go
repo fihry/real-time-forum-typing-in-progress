@@ -32,7 +32,7 @@ func (s *MessageService) Websocket(conn *websocket.Conn, ctx context.Context, se
 
 	// Add client to manager
 	go s.Manager.AddClient(uint(id), conn)
-	defer s.Manager.RemoveClient(uint(id))
+	defer s.Manager.RemoveClient(uint(id), conn)
 
 	var user entity.Contact
 	user, _, err := s.GetUserByID(ctx, uint(id))
@@ -56,6 +56,7 @@ func messagessHandller(s *MessageService, conn *websocket.Conn, ctx context.Cont
 	for {
 		_, message, err := conn.ReadMessage()
 		if err != nil {
+			s.RemoveClient(user.ID, conn)
 			log.Printf("Error reading message: %v", err)
 			return err
 		}
@@ -102,6 +103,7 @@ func messagessHandller(s *MessageService, conn *websocket.Conn, ctx context.Cont
 			// Fetch and send contacts
 			contactsOrder, status, err := getContacts(ctx, s, user.ID)
 			if err != nil || status != http.StatusOK {
+				fmt.Println("in this case")
 				return fmt.Errorf("error occurred while getting contacts: %v", err)
 			}
 			if err := conn.WriteJSON(contactsOrder); err != nil {
@@ -147,7 +149,6 @@ func getContacts(ctx context.Context, s *MessageService, id uint) (entity.Consta
 	if err != nil || status != http.StatusOK {
 		return entity.ConstacsOrder{}, http.StatusInternalServerError, err
 	}
-	fmt.Println(len(contacts))
 	// Add online/offline status for each contact
 	for i:=0; i< len(contacts); i++ {
 		contact:= contacts[i]
@@ -156,17 +157,14 @@ func getContacts(ctx context.Context, s *MessageService, id uint) (entity.Consta
 			contacts = append(contacts[:i], contacts[i+1:]...)
 			continue
 		}
-		fmt.Println(contact.ID, id, i)
-		s.Manager.Mtx.RLock()
-		online := s.Manager.GetClient(contact.ID) != nil
-		s.Manager.Mtx.RUnlock()
+		online := s.Manager.IsClientConnected(contact.ID) 
+		fmt.Println(contact.ID, s.Manager.GetClient(contact.ID))
 		if online {
 			contacts[i].Status = "online"
 		} else {
 			contacts[i].Status = "offline"
 		}
 	}
-
 	// Return the contacts list
 	contactsOrder := entity.ConstacsOrder{
 		Action:   "get_contacts",
