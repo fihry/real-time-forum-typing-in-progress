@@ -104,7 +104,7 @@ const router = async () => {
 
   if (user.role < match.route.minRole) {
     Utils.showError(401, "Please sign in to get access for this page");
-    window.location.href = "/sign-in";
+    navigateTo("/sign-in");
     return;
   }
   ws.init();
@@ -150,12 +150,6 @@ const router = async () => {
 
 window.addEventListener("popstate", router);
 
-window.addEventListener("storage", () => {
-  const user = Utils.getUser();
-  if (user.id == null) {
-    location.reload();
-  }
-});
 
 document.addEventListener("DOMContentLoaded", () => {
   document.body.addEventListener("click", (e) => {

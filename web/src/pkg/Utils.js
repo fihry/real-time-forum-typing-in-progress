@@ -35,6 +35,7 @@ const logOut = () => {
     method: "POST",
   }).then((response) => {
     if (response.status === 200) {
+      console.log('User logged out')
       window.location.href = "/";
     }
   });

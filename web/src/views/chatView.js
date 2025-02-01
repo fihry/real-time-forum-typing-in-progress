@@ -357,7 +357,7 @@ export default class extends AbstractView {
   // Send a message to the selected contact
   sendMessage() {
     const chatForm = document.getElementById("chat-form");
-    chatForm.addEventListener("submit", (event) => {
+    chatForm ? chatForm.addEventListener("submit", (event) => {
       event.preventDefault();
       const messageInput = document.getElementById("message");
       const message = messageInput.value.trim();
@@ -382,7 +382,7 @@ export default class extends AbstractView {
       } else {
         this.handleError(null, "Please enter a message.");
       }
-    });
+    }) : console.log("chatform not ready yet");
   }
 
   // this function get the contacterId frome the location path 

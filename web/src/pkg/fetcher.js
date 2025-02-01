@@ -8,6 +8,7 @@ const fetcher = {
   post: async (path, body) => {
     return makeRequest(path, body, "POST");
   },
+  
   checkToken: async () => {
     //http://${API_HOST_NAME}
     const url = `/api/is-valid`;
@@ -35,6 +36,7 @@ const fetcher = {
 
     return responseBody;
   },
+
   isLoggedIn: async () => {
     const url = `/api/is-valid`;
     const options = {

@@ -66,7 +66,6 @@ export default class extends AbstractView {
                             Don't have an account? 
                             <a href="/sign-up" data-link>Sign Up</a>
                         </p>
-                            <a href="/" data-link>Go Home</a>
                     </div>
 
                     <div id="showError" class="error-message"></div>
@@ -83,7 +82,6 @@ export default class extends AbstractView {
 
       const email = document.getElementById("email")?.value;
       const password = document.getElementById("password")?.value;
-      console.log(email, password);
       // Validate inputs
       if (!email || !password) {
         document.getElementById("showError").innerHTML =
