@@ -86,7 +86,6 @@ export default class extends AbstractView {
     const links = document.querySelector(".links");
     hamburger.onchange = () => {
       links.classList.toggle("links-active");
-      // links.style.display = hamburger.checked ? "block" : "none";
     }
   }
 }

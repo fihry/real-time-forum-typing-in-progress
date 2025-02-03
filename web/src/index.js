@@ -12,6 +12,7 @@ import fetcher from "./pkg/fetcher.js";
 import Chat from "./views/chatView.js";
 import ContactsBarView from "./views/contactsBarView.js";
 import ws from "./pkg/ws.js"
+import AbstractView from "./views/AbstractView.js";
 
 let homeInstance = null;
 const pathToRegex = (path) =>
