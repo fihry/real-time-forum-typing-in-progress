@@ -63,7 +63,7 @@ go run main.go
 ```
 
 ## project stucture
-
+```yml
 ├── config/ # Application configuration
 ├── internal/ # Internal application code
 │ ├── app/ # Application initialization
@@ -77,3 +77,4 @@ go run main.go
 └── web/ # Frontend assets
 ├── src/ # JavaScript source
 └── index.html # Main HTML template
+```
