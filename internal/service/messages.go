@@ -136,6 +136,24 @@ func messagessHandller(s *MessageService, conn *websocket.Conn, ctx context.Cont
 					log.Printf("Error writing message to client: %v", err)
 				}
 			}()
+		case "start_typing":
+			// Notify the receiver (if online)
+			messageInfo.Action = "start_typing"
+			// Write the message to the receiver
+			go func() {
+				if err := s.Manager.WriteToClient(ctx, messageInfo); err != nil {
+					log.Printf("Error writing message to client: %v", err)
+				}
+			}()
+		case "stop_typing":
+			// Notify the receiver (if online)
+			messageInfo.Action = "stop_typing"
+			// Write the message to the receiver
+			go func() {
+				if err := s.Manager.WriteToClient(ctx, messageInfo); err != nil {
+					log.Printf("Error writing message to client: %v", err)
+				}
+			}()
 		default:
 			log.Printf("Unknown action: %v", messageInfo.Action)
 		}
@@ -149,14 +167,14 @@ func getContacts(ctx context.Context, s *MessageService, id uint) (entity.Consta
 		return entity.ConstacsOrder{}, http.StatusInternalServerError, err
 	}
 	// Add online/offline status for each contact
-	for i:=0; i< len(contacts); i++ {
-		contact:= contacts[i]
+	for i := 0; i < len(contacts); i++ {
+		contact := contacts[i]
 		// ignore the user itself
 		if contact.ID == id {
 			contacts = append(contacts[:i], contacts[i+1:]...)
 			continue
 		}
-		online := s.Manager.IsClientConnected(contact.ID) 
+		online := s.Manager.IsClientConnected(contact.ID)
 		if online {
 			contacts[i].Status = "online"
 		} else {

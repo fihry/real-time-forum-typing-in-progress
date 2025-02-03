@@ -98,7 +98,7 @@ func (r *messageRepo) GetAllContacts(ctx context.Context, userID uint) ([]entity
 
 // GetMessagesBySenderIDAndReceiverID retrieves all messages between two users
 func (r *messageRepo) GetMessagesBySenderIDAndReceiverID(ctx context.Context, senderID, receiverID uint, limit, offset int) ([]entity.Message, int, error) {
-	query := `SELECT id, sender_id, receiver_id, message, created_at FROM messages WHERE (sender_id = $1 AND receiver_id = $2) OR (sender_id = $2 AND receiver_id = $1) ORDER BY created_at DESC LIMIT $3 OFFSET $4;`
+	query := `SELECT id, sender_id, receiver_id, message, created_at FROM messages WHERE (sender_id = $1 AND receiver_id = $2) OR (sender_id = $2 AND receiver_id = $1) ORDER BY created_at DESC,id DESC LIMIT $3 OFFSET $4;`
 	prep, err := r.Db.PrepareContext(ctx, query)
 	if err != nil {
 		return nil, http.StatusInternalServerError, err

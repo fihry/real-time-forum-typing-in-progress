@@ -359,6 +359,25 @@ body {
   background-color: var(--color-scrollbar);
 }
 
+.typing {
+  width: max-content;
+  padding: 0.5rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  color: #08ffc9;
+}
+
+.typing .dotss {
+  display: inline-block;
+  width: max-content;
+  margin-left: 2px;
+  border-radius: 50%;
+  animation: typing 1s infinite;
+}
 .error {
   width: 100%;
   height: 50%;
@@ -486,4 +505,17 @@ body {
     transform: translateY(0);
   }
 
+}
+@keyframes typing {
+  0% {
+    opacity: 0;
+  }
+
+  50% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
 }

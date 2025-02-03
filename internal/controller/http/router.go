@@ -46,6 +46,7 @@ func (h *Handler) InitRoutes(conf *config.Conf) *http.ServeMux {
 			return
 		}
 		http.ServeFile(w, r, path.Join("./web", r.URL.Path))
+		w.Header().Set("Cache-Control", "no-cache")
 	})
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		tmpl, err := template.ParseFiles("./web/index.html")

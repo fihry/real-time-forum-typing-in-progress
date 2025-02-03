@@ -48,10 +48,10 @@ export default class extends AbstractView {
   }
 
   async init() {
+    console.log(this.messages);
     const showError = document.getElementById("showError");
     const chatUsers = document?.querySelector(".chat-users");
     // Initialize WebSocket connection
-
     Ws.init();
     this.ws = Ws.getWs();
     if (this.ws.readyState === WebSocket.OPEN) {
@@ -69,10 +69,11 @@ export default class extends AbstractView {
 
 
     // Handle incoming WebSocket messages
-    this.ws.addEventListener("message", (event) => this.handleMessage(event, chatUsers, showError));
+    this.ws.onmessage = (event) => this.handleMessage(event, chatUsers, showError);
 
     // initialize the contacter and load the messages
     this.removeMessagesBtn();
+    this.handleTyping();
     // Error handling for WebSocket connection
     this.ws.onclose = (event) => this.handleClose(event);
     this.ws.onerror = (event) => this.handleError(event);
@@ -137,6 +138,15 @@ export default class extends AbstractView {
         case "get_messages":
           this.msgStatus = data.status;
           this.displayMessages(data);
+          break;
+        case "start_typing":
+          this.displayTyping(data);
+          break;
+        case "stop_typing":
+          const typingElement = document.querySelector(".typing");
+          if (typingElement) {
+            typingElement.remove();
+          }
           break;
         default:
           break;
@@ -422,6 +432,57 @@ export default class extends AbstractView {
     const messagesBtn = document.querySelector("#messages-btn");
     if (messagesBtn) {
       messagesBtn.style.display = "none";
+    }
+  }
+
+  // this function handle typing
+  handleTyping() {
+    const messageInput = document.getElementById("message");
+    if (messageInput) {
+      // if start typing in the input
+      messageInput.addEventListener("keypress", this.debounce(() => {
+        this.Typing("start_typing");
+      }, 500));
+      // if stop typing in the input
+      messageInput.addEventListener("input", this.debounce(() => {
+        this.Typing("stop_typing");
+      }, 1500));
+    }
+  }
+
+  debounce(func, timeout = 500) {
+    let timer;
+    return (...args) => {
+      clearTimeout(timer);
+      timer = setTimeout(() => { func(this, args); }, timeout);
+    };
+  }
+
+  // this function send start typing or stop typing message to the server
+  Typing(message) {
+    this.ws.send(JSON.stringify({
+      action: message,
+      receiver_id: this.contacter?.id,
+      sender_id: this.sender.id,
+      nickname: this.sender.nickname
+    }));
+  }
+
+  // this function display typing message in the chat
+  displayTyping(data) {
+    if (data.sender_id === this.contacter.id && data.receiver_id === this.sender.id) {
+      const chatMessages = document.getElementById("chat-messages");
+      const typingElement = document.createElement("div");
+      typingElement.className = "typing";
+
+      typingElement.innerHTML = `${data.nickname} is typing <div class="dotss">...</div>`;
+      // remove the typing element if it exists
+      const typing = document.querySelector(".typing");
+      if (typing) {
+        typing.remove();
+      }
+      chatMessages.appendChild(typingElement);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
     }
   }
 
