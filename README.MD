@@ -52,7 +52,7 @@ A modern web forum application built with Go backend and vanilla JavaScript fron
 2. Run the application:
 
 ```sh
-go run main.go
+go run .
 ```
 
 3. Access the application at `http://localhost:8080`

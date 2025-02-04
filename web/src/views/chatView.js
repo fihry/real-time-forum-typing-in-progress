@@ -440,7 +440,7 @@ export default class extends AbstractView {
     const messageInput = document.getElementById("message");
     if (messageInput) {
       // if start typing in the input
-      messageInput.addEventListener("keypress", this.debounce(() => {
+      messageInput.addEventListener("keypress", this.debounce2(() => {
         this.Typing("start_typing");
       }, 500));
       // if stop typing in the input
@@ -455,6 +455,21 @@ export default class extends AbstractView {
     return (...args) => {
       clearTimeout(timer);
       timer = setTimeout(() => { func(this, args); }, timeout);
+    };
+  }
+  debounce2(func, timeout = 500) {
+    let timer;
+    let done = true;
+    return (...args) => {
+      clearTimeout(timer);
+      if (done) {
+        done = false;
+        func(this, args);
+      }
+      timer = setTimeout(() => {
+        done = true;
+      }, timeout);
+
     };
   }
 
